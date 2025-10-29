@@ -28,7 +28,7 @@ dependencies = [
     
     # Technical Analysis
     "ta-lib>=0.4.28",  # Note: requires binary installation
-    "pandas-ta>=0.3.14b",  # Alternative if TA-Lib unavailable
+    "pandas-ta==0.3.14b0",  # Alternative if TA-Lib unavailable; latest release compatible with Python 3.11
     
     # Broker APIs
     "python-binance>=1.0.19",
