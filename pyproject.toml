@@ -25,11 +25,10 @@ dependencies = [
     # Core
     "numpy>=1.24.0",
     "pandas>=2.0.0",
-    
+
     # Technical Analysis
     "ta-lib>=0.4.28",  # Note: requires binary installation
-    "pandas-ta>=0.3.14b",  # Alternative if TA-Lib unavailable
-    
+
     # Broker APIs
     "python-binance>=1.0.19",
     "ib-insync>=0.9.86",  # Interactive Brokers
@@ -49,6 +48,11 @@ dependencies = [
 [project.optional-dependencies]
 windows = [
     "MetaTrader5>=5.0.45",
+]
+technical-analysis = [
+    # pandas-ta has no Python 3.11+ wheels on PyPI as of 2024-11
+    # Users who rely on pandas-ta can install a compatible build manually.
+    "pandas-ta>=0.3.14b0; python_version < '3.11'",
 ]
 dev = [
     # Testing
