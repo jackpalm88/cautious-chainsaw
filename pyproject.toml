@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -21,38 +21,16 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 
-dependencies = [
-    # Core
-    "numpy>=1.24.0",
-    "pandas>=2.0.0",
-
-    # Technical Analysis
-    "ta-lib>=0.4.28",  # Note: requires binary installation
-
-    # Broker APIs
-    "python-binance>=1.0.19",
-    "ib-insync>=0.9.86",  # Interactive Brokers
-
-    # HTTP/Async
-    "requests>=2.31.0",
-    "aiohttp>=3.9.0",
-
-    # Data validation
-    "pydantic>=2.5.0",
-
-    # Utilities
-    "python-dateutil>=2.8.2",
-    "pytz>=2023.3",
-]
+dependencies = []
 
 [project.optional-dependencies]
 windows = [
     "MetaTrader5>=5.0.45",
 ]
 technical-analysis = [
-    # pandas-ta has no Python 3.11+ wheels on PyPI as of 2024-11
-    # Users who rely on pandas-ta can install a compatible build manually.
-    "pandas-ta>=0.3.14b0; python_version < '3.11'",
+    # Optional stack for indicator calculations
+    "ta-lib>=0.4.28",
+    "pandas-ta>=0.3.14b0",
 ]
 dev = [
     # Testing
@@ -98,9 +76,6 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
-    "--cov=src/trading_agent",
-    "--cov-report=term-missing",
-    "--cov-report=html",
     "--strict-markers",
     "-v"
 ]

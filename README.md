@@ -26,8 +26,11 @@ Advanced algorithmic trading framework featuring:
 git clone https://github.com/jackpalm88/Financial-Agent.git
 cd Financial-Agent
 
-# Install dependencies
-pip install -e ".[dev]"
+# Install core package
+pip install -e .
+
+# (Optional) Technical analysis extras
+pip install -e ".[dev,technical-analysis]"
 
 # Run tests
 pytest
