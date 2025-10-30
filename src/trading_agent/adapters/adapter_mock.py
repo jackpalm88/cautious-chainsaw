@@ -5,17 +5,16 @@ For testing and development without real broker connection
 
 import asyncio
 import random
-from typing import Dict, Tuple, Optional, List
 from datetime import datetime
 
 from .adapter_base import (
+    AccountInfo,
     BaseExecutionAdapter,
-    SymbolInfo,
+    ErrorCode,
     OrderRequest,
     OrderResult,
-    AccountInfo,
     PositionInfo,
-    ErrorCode
+    SymbolInfo,
 )
 
 
@@ -56,7 +55,7 @@ class MockAdapter(BaseExecutionAdapter):
         self._balance = initial_balance
         self._equity = initial_balance
         self._margin = 0.0
-        self._positions: Dict[int, PositionInfo] = {}
+        self._positions: dict[int, PositionInfo] = {}
 
         # Market prices (mock)
         self._prices = {
@@ -114,7 +113,7 @@ class MockAdapter(BaseExecutionAdapter):
         """Check connection status"""
         return self._connected
 
-    async def symbol_info(self, symbol: str) -> Optional[SymbolInfo]:
+    async def symbol_info(self, symbol: str) -> SymbolInfo | None:
         """Get mock symbol info"""
         if not self._connected:
             return None
@@ -122,7 +121,7 @@ class MockAdapter(BaseExecutionAdapter):
         await asyncio.sleep(0.001)  # Simulate latency
         return self._symbols.get(symbol)
 
-    async def current_price(self, symbol: str) -> Optional[Tuple[float, float]]:
+    async def current_price(self, symbol: str) -> tuple[float, float] | None:
         """Get mock current prices"""
         if not self._connected:
             return None
@@ -238,7 +237,7 @@ class MockAdapter(BaseExecutionAdapter):
             error_code=ErrorCode.SUCCESS
         )
 
-    async def order_fill_price(self, order_id: int) -> Optional[float]:
+    async def order_fill_price(self, order_id: int) -> float | None:
         """Get fill price for order"""
         if not self._connected:
             return None
@@ -249,7 +248,7 @@ class MockAdapter(BaseExecutionAdapter):
 
         return None
 
-    async def account_info(self) -> Optional[AccountInfo]:
+    async def account_info(self) -> AccountInfo | None:
         """Get mock account info"""
         if not self._connected:
             return None
@@ -271,7 +270,7 @@ class MockAdapter(BaseExecutionAdapter):
             leverage=100
         )
 
-    async def open_positions(self, symbol: Optional[str] = None) -> List[PositionInfo]:
+    async def open_positions(self, symbol: str | None = None) -> list[PositionInfo]:
         """Get open positions"""
         if not self._connected:
             return []

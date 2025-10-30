@@ -4,19 +4,14 @@ Accepts any execution adapter (MT5, IBKR, Mock, etc.)
 """
 
 import asyncio
-import time
 import logging
+import time
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Dict, Optional, List, Callable
-from dataclasses import dataclass, asdict
 from enum import Enum
 
-from .adapter_base import (
-    BaseExecutionAdapter,
-    OrderRequest,
-    OrderResult,
-    ErrorCode
-)
+from .adapter_base import BaseExecutionAdapter, ErrorCode, OrderRequest
 
 # Configure logging
 logging.basicConfig(
@@ -45,11 +40,11 @@ class Signal:
     symbol: str
     direction: OrderDirection
     size: float
-    stop_loss: Optional[float] = None
-    take_profit: Optional[float] = None
+    stop_loss: float | None = None
+    take_profit: float | None = None
     confidence: float = 0.0
     reasoning: str = ""
-    metadata: Dict = None
+    metadata: dict = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -64,20 +59,20 @@ class ExecutionResult:
     success: bool
     signal_id: str
     status: ExecutionStatus
-    order_id: Optional[int] = None
-    fill_price: Optional[float] = None
-    fill_volume: Optional[float] = None
-    execution_time_ms: Optional[float] = None
-    slippage_pips: Optional[float] = None
-    error_code: Optional[ErrorCode] = None
-    error_message: Optional[str] = None
+    order_id: int | None = None
+    fill_price: float | None = None
+    fill_volume: float | None = None
+    execution_time_ms: float | None = None
+    slippage_pips: float | None = None
+    error_code: ErrorCode | None = None
+    error_message: str | None = None
     timestamp: str = None
 
     def __post_init__(self):
         if self.timestamp is None:
             self.timestamp = datetime.now().isoformat()
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary"""
         result = asdict(self)
         result['status'] = self.status.value
@@ -122,8 +117,8 @@ class MT5ExecutionBridge:
         self.magic = magic
 
         self.order_queue = asyncio.Queue()
-        self.confirmation_callbacks: List[Callable] = []
-        self.execution_history: List[ExecutionResult] = []
+        self.confirmation_callbacks: list[Callable] = []
+        self.execution_history: list[ExecutionResult] = []
 
         logger.info(f"Initialized bridge with {adapter.get_name()}")
 
@@ -360,11 +355,11 @@ class MT5ExecutionBridge:
         self.confirmation_callbacks.append(callback)
         logger.info(f"Registered callback: {callback.__name__}")
 
-    def get_execution_history(self, limit: int = 100) -> List[ExecutionResult]:
+    def get_execution_history(self, limit: int = 100) -> list[ExecutionResult]:
         """Get recent execution history"""
         return self.execution_history[-limit:]
 
-    def get_execution_statistics(self) -> Dict:
+    def get_execution_statistics(self) -> dict:
         """Get execution performance statistics"""
         if not self.execution_history:
             return {
@@ -394,7 +389,7 @@ class MT5ExecutionBridge:
             'p95_execution_time_ms': self._percentile(exec_times, 95) if exec_times else 0.0
         }
 
-    def _percentile(self, values: List[float], percentile: int) -> float:
+    def _percentile(self, values: list[float], percentile: int) -> float:
         """Calculate percentile"""
         if not values:
             return 0.0
@@ -408,7 +403,7 @@ class MT5ExecutionBridge:
         """Get current account information"""
         return await self.adapter.account_info()
 
-    async def get_open_positions(self, symbol: Optional[str] = None):
+    async def get_open_positions(self, symbol: str | None = None):
         """Get open positions"""
         positions = await self.adapter.open_positions(symbol)
 
@@ -475,7 +470,7 @@ class AsyncExecutionEngine:
                         self.bridge.order_queue.get(),
                         timeout=1.0
                     )
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     continue
 
                 signal_id = order_data['signal_id']

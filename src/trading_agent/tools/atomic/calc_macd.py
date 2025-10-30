@@ -4,10 +4,11 @@ Calculates MACD (Moving Average Convergence Divergence) with confidence
 """
 
 import time
-from typing import List, Dict, Any, Tuple
+from typing import Any
+
 import numpy as np
 
-from ..base_tool import BaseTool, ToolResult, ToolTier, ConfidenceComponents, ConfidenceCalculator
+from ..base_tool import BaseTool, ConfidenceCalculator, ConfidenceComponents, ToolResult, ToolTier
 
 
 class CalcMACD(BaseTool):
@@ -42,7 +43,7 @@ class CalcMACD(BaseTool):
         self.slow_period = slow_period
         self.signal_period = signal_period
 
-    def execute(self, prices: List[float], **kwargs) -> ToolResult:
+    def execute(self, prices: list[float], **kwargs) -> ToolResult:
         """
         Calculate MACD for given price series.
 
@@ -97,7 +98,7 @@ class CalcMACD(BaseTool):
                 error=str(e)
             )
 
-    def validate_inputs(self, prices: List[float]) -> None:
+    def validate_inputs(self, prices: list[float]) -> None:
         """Validate input parameters"""
         required_samples = self.slow_period + self.signal_period
 
@@ -131,7 +132,7 @@ class CalcMACD(BaseTool):
 
         return ema
 
-    def _calculate_macd(self, prices: List[float]) -> Tuple[float, float, float]:
+    def _calculate_macd(self, prices: list[float]) -> tuple[float, float, float]:
         """
         Calculate MACD, signal line, and histogram.
 
@@ -171,7 +172,7 @@ class CalcMACD(BaseTool):
 
         return macd, signal, histogram
 
-    def _calculate_confidence(self, prices: List[float]) -> ConfidenceComponents:
+    def _calculate_confidence(self, prices: list[float]) -> ConfidenceComponents:
         """Calculate multi-factor confidence"""
         # Sample sufficiency
         required_samples = self.slow_period + self.signal_period
@@ -219,7 +220,7 @@ class CalcMACD(BaseTool):
         else:
             return 'neutral'
 
-    def get_schema(self) -> Dict[str, Any]:
+    def get_schema(self) -> dict[str, Any]:
         """Get JSON-Schema for LLM function calling"""
         required_samples = self.slow_period + self.signal_period
         return {

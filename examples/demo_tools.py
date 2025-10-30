@@ -4,15 +4,15 @@ Demonstrates basic tool usage and registry
 """
 
 import json
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.trading_agent.tools import (
-    CalcRSI,
     CalcMACD,
+    CalcRSI,
     ToolRegistry,
-    get_registry,
 )
 
 
@@ -33,13 +33,13 @@ def demo_rsi():
 
     print(f"\nTool: {rsi_tool}")
     print(f"Prices: {len(prices)} samples")
-    print(f"\nResult:")
+    print("\nResult:")
     print(f"  RSI: {result.value['rsi']:.2f}")
     print(f"  Signal: {result.value['signal']}")
     print(f"  Confidence: {result.confidence:.3f}")
     print(f"  Latency: {result.latency_ms:.2f}ms")
 
-    print(f"\nConfidence Components:")
+    print("\nConfidence Components:")
     for key, value in result.metadata['confidence_components'].items():
         print(f"  {key}: {value:.3f}")
 
@@ -63,7 +63,7 @@ def demo_macd():
 
     print(f"\nTool: {macd_tool}")
     print(f"Prices: {len(prices)} samples")
-    print(f"\nResult:")
+    print("\nResult:")
     print(f"  MACD: {result.value['macd']:.5f}")
     print(f"  Signal: {result.value['signal']:.5f}")
     print(f"  Histogram: {result.value['histogram']:.5f}")
@@ -94,17 +94,17 @@ def demo_registry():
     # Get catalog
     catalog = registry.catalog()
 
-    print(f"\nCatalog:")
+    print("\nCatalog:")
     print(f"  Version: {catalog['version']}")
     print(f"  Total Tools: {catalog['total_tools']}")
     print(f"  By Tier: {catalog['tools_by_tier']}")
 
-    print(f"\nRegistered Tools:")
+    print("\nRegistered Tools:")
     for tool_schema in catalog['tools']:
         print(f"  - {tool_schema['name']} (v{tool_schema['version']}, {tool_schema['tier']})")
 
     # Export for LLM
-    print(f"\n" + "-" * 60)
+    print("\n" + "-" * 60)
     print("LLM Function Calling Schema:")
     print("-" * 60)
 

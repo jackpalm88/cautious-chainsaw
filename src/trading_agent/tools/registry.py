@@ -3,7 +3,8 @@ Tool Registry
 Central registry for all trading agent tools
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Any
+
 from .base_tool import BaseTool, ToolTier
 
 
@@ -19,8 +20,8 @@ class ToolRegistry:
 
     def __init__(self):
         """Initialize empty registry"""
-        self._tools: Dict[str, BaseTool] = {}
-        self._tools_by_tier: Dict[ToolTier, List[BaseTool]] = {
+        self._tools: dict[str, BaseTool] = {}
+        self._tools_by_tier: dict[ToolTier, list[BaseTool]] = {
             ToolTier.ATOMIC: [],
             ToolTier.COMPOSITE: [],
             ToolTier.EXECUTION: [],
@@ -42,7 +43,7 @@ class ToolRegistry:
         self._tools[tool.name] = tool
         self._tools_by_tier[tool.tier].append(tool)
 
-    def get(self, name: str) -> Optional[BaseTool]:
+    def get(self, name: str) -> BaseTool | None:
         """
         Get tool by name.
 
@@ -54,7 +55,7 @@ class ToolRegistry:
         """
         return self._tools.get(name)
 
-    def get_by_tier(self, tier: ToolTier) -> List[BaseTool]:
+    def get_by_tier(self, tier: ToolTier) -> list[BaseTool]:
         """
         Get all tools of specific tier.
 
@@ -66,7 +67,7 @@ class ToolRegistry:
         """
         return self._tools_by_tier[tier].copy()
 
-    def list_all(self) -> List[BaseTool]:
+    def list_all(self) -> list[BaseTool]:
         """
         Get all registered tools.
 
@@ -75,7 +76,7 @@ class ToolRegistry:
         """
         return list(self._tools.values())
 
-    def catalog(self) -> Dict[str, Any]:
+    def catalog(self) -> dict[str, Any]:
         """
         Export full tool catalog in JSON-Schema format for LLM.
 
@@ -102,7 +103,7 @@ class ToolRegistry:
 
         return catalog
 
-    def get_llm_functions(self) -> List[Dict[str, Any]]:
+    def get_llm_functions(self) -> list[dict[str, Any]]:
         """
         Get tool schemas in OpenAI function calling format.
 
@@ -152,7 +153,7 @@ def register_tool(tool: BaseTool) -> None:
     _global_registry.register(tool)
 
 
-def get_tool(name: str) -> Optional[BaseTool]:
+def get_tool(name: str) -> BaseTool | None:
     """
     Get tool from global registry.
 

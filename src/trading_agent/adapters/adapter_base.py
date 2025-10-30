@@ -4,10 +4,9 @@ Defines contract for all execution providers (MT5, IBKR, Binance, etc.)
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Tuple, Optional, List
 from dataclasses import dataclass
-from enum import Enum
 from datetime import datetime
+from enum import Enum
 
 
 class ErrorCode(Enum):
@@ -68,8 +67,8 @@ class OrderRequest:
     symbol: str
     direction: str  # 'LONG' or 'SHORT'
     size: float  # Position size in lots
-    stop_loss: Optional[float] = None
-    take_profit: Optional[float] = None
+    stop_loss: float | None = None
+    take_profit: float | None = None
     deviation: int = 10  # Max slippage in points
     comment: str = ""
     magic: int = 0  # Magic number for order identification
@@ -79,11 +78,11 @@ class OrderRequest:
 class OrderResult:
     """Result of order execution"""
     success: bool
-    order_id: Optional[int] = None
-    fill_price: Optional[float] = None
-    fill_volume: Optional[float] = None
-    error_code: Optional[ErrorCode] = None
-    error_message: Optional[str] = None
+    order_id: int | None = None
+    fill_price: float | None = None
+    fill_volume: float | None = None
+    error_code: ErrorCode | None = None
+    error_message: str | None = None
     timestamp: datetime = None
 
     def __post_init__(self):
@@ -113,8 +112,8 @@ class PositionInfo:
     price_open: float
     price_current: float
     profit: float
-    stop_loss: Optional[float]
-    take_profit: Optional[float]
+    stop_loss: float | None
+    take_profit: float | None
     open_time: datetime
 
 
@@ -154,7 +153,7 @@ class BaseExecutionAdapter(ABC):
         pass
 
     @abstractmethod
-    async def symbol_info(self, symbol: str) -> Optional[SymbolInfo]:
+    async def symbol_info(self, symbol: str) -> SymbolInfo | None:
         """
         Get symbol information.
 
@@ -167,7 +166,7 @@ class BaseExecutionAdapter(ABC):
         pass
 
     @abstractmethod
-    async def current_price(self, symbol: str) -> Optional[Tuple[float, float]]:
+    async def current_price(self, symbol: str) -> tuple[float, float] | None:
         """
         Get current bid/ask prices for symbol.
 
@@ -193,7 +192,7 @@ class BaseExecutionAdapter(ABC):
         pass
 
     @abstractmethod
-    async def order_fill_price(self, order_id: int) -> Optional[float]:
+    async def order_fill_price(self, order_id: int) -> float | None:
         """
         Get fill price for executed order.
 
@@ -206,7 +205,7 @@ class BaseExecutionAdapter(ABC):
         pass
 
     @abstractmethod
-    async def account_info(self) -> Optional[AccountInfo]:
+    async def account_info(self) -> AccountInfo | None:
         """
         Get current account information.
 
@@ -216,7 +215,7 @@ class BaseExecutionAdapter(ABC):
         pass
 
     @abstractmethod
-    async def open_positions(self, symbol: Optional[str] = None) -> List[PositionInfo]:
+    async def open_positions(self, symbol: str | None = None) -> list[PositionInfo]:
         """
         Get list of open positions.
 

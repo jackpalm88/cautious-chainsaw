@@ -5,9 +5,9 @@ Defines contract for all trading agent tools (atomic, composite, execution)
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 
 class ToolTier(Enum):
@@ -32,8 +32,8 @@ class ToolResult:
     value: Any
     confidence: float
     latency_ms: float
-    metadata: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    metadata: dict[str, Any] | None = None
+    error: str | None = None
     timestamp: datetime = None
 
     def __post_init__(self):
@@ -84,7 +84,7 @@ class BaseTool(ABC):
         pass
 
     @abstractmethod
-    def get_schema(self) -> Dict[str, Any]:
+    def get_schema(self) -> dict[str, Any]:
         """
         Get JSON-Schema for LLM function calling.
 
@@ -103,14 +103,19 @@ class BaseTool(ABC):
         pass
 
     def validate_inputs(self, **kwargs) -> None:
-        """
-        Validate input parameters.
+        """Validate input parameters.
+
+        The default implementation performs a lightweight sanity check to
+        surface obviously invalid arguments (for example ``None`` values).
+        Tool implementations can extend this behaviour by overriding the
+        method and calling ``super().validate_inputs`` first.
 
         Raises:
-            ValueError: If inputs are invalid
+            ValueError: If any provided parameter is ``None``.
         """
-        # Default implementation - override for custom validation
-        pass
+        for name, value in kwargs.items():
+            if value is None:
+                raise ValueError(f"Parameter '{name}' cannot be None")
 
     def __str__(self) -> str:
         return f"{self.name} v{self.version} ({self.tier.value})"
@@ -168,7 +173,7 @@ class ConfidenceComponents:
         # Clamp to [0.0, 1.0]
         return max(0.0, min(1.0, confidence))
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Export components as dict for logging/debugging"""
         return {
             'sample_sufficiency': self.sample_sufficiency,
@@ -246,7 +251,7 @@ class ConfidenceCalculator:
             return 1.0  # Medium volatility optimal
 
     @staticmethod
-    def indicator_agreement(indicators: Dict[str, str]) -> float:
+    def indicator_agreement(indicators: dict[str, str]) -> float:
         """
         Calculate agreement between technical indicators.
 
@@ -263,7 +268,6 @@ class ConfidenceCalculator:
         signals = list(indicators.values())
         bullish_count = signals.count('bullish')
         bearish_count = signals.count('bearish')
-        neutral_count = signals.count('neutral')
         total = len(signals)
 
         # Perfect agreement (all bullish or all bearish)

@@ -2,13 +2,13 @@
 Tests for Trading Agent Tools
 """
 
-import pytest
 import numpy as np
+import pytest
+
 from src.trading_agent.tools import (
-    CalcRSI,
     CalcMACD,
+    CalcRSI,
     ToolRegistry,
-    get_registry,
 )
 
 

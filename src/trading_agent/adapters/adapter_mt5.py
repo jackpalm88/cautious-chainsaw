@@ -3,21 +3,20 @@ Real MT5 Execution Adapter
 Production adapter using MetaTrader5 Python package
 """
 
-import MetaTrader5 as mt5
-import asyncio
-from typing import Dict, Tuple, Optional, List
-from datetime import datetime
 import logging
+from datetime import datetime
+
+import MetaTrader5 as mt5
 
 from .adapter_base import (
+    AccountInfo,
     BaseExecutionAdapter,
-    SymbolInfo,
+    ErrorCode,
     OrderRequest,
     OrderResult,
-    AccountInfo,
     PositionInfo,
-    ErrorCode,
-    map_mt5_error
+    SymbolInfo,
+    map_mt5_error,
 )
 
 logger = logging.getLogger(__name__)
@@ -31,7 +30,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
     Provides comprehensive error handling and validation.
     """
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         """
         Initialize MT5 adapter.
 
@@ -103,7 +102,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
         """Check connection status"""
         return self._connected and mt5.terminal_info() is not None
 
-    async def symbol_info(self, symbol: str) -> Optional[SymbolInfo]:
+    async def symbol_info(self, symbol: str) -> SymbolInfo | None:
         """Get symbol information from MT5"""
         if not self._connected:
             return None
@@ -129,7 +128,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
             trade_mode='FULL' if info.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL else 'DISABLED'
         )
 
-    async def current_price(self, symbol: str) -> Optional[Tuple[float, float]]:
+    async def current_price(self, symbol: str) -> tuple[float, float] | None:
         """Get current bid/ask prices"""
         if not self._connected:
             return None
@@ -244,7 +243,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
                 error_message=str(e)
             )
 
-    async def order_fill_price(self, order_id: int) -> Optional[float]:
+    async def order_fill_price(self, order_id: int) -> float | None:
         """Get fill price for order"""
         if not self._connected:
             return None
@@ -263,7 +262,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
 
         return None
 
-    async def account_info(self) -> Optional[AccountInfo]:
+    async def account_info(self) -> AccountInfo | None:
         """Get MT5 account information"""
         if not self._connected:
             return None
@@ -282,7 +281,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
             leverage=account.leverage
         )
 
-    async def open_positions(self, symbol: Optional[str] = None) -> List[PositionInfo]:
+    async def open_positions(self, symbol: str | None = None) -> list[PositionInfo]:
         """Get open positions from MT5"""
         if not self._connected:
             return []

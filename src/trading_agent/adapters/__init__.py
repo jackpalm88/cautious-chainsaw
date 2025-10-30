@@ -7,13 +7,13 @@ Swap execution providers (MT5, IBKR, Binance, etc.) without changing bridge code
 
 # Adapter Base (Interface + Error Codes)
 from .adapter_base import (
+    AccountInfo,
     BaseExecutionAdapter,
     ErrorCode,
-    SymbolInfo,
     OrderRequest,
     OrderResult,
-    AccountInfo,
-    PositionInfo
+    PositionInfo,
+    SymbolInfo,
 )
 
 # Concrete Adapters
@@ -28,13 +28,7 @@ except ImportError:
     _HAS_MT5 = False
 
 # Bridge
-from .bridge import (
-    MT5ExecutionBridge,
-    Signal,
-    OrderDirection,
-    ExecutionResult,
-    ExecutionStatus
-)
+from .bridge import ExecutionResult, ExecutionStatus, MT5ExecutionBridge, OrderDirection, Signal
 
 # Version
 __version__ = '2.0.0'

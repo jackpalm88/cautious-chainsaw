@@ -4,10 +4,11 @@ Calculates Relative Strength Index with multi-factor confidence
 """
 
 import time
-from typing import List, Dict, Any
+from typing import Any
+
 import numpy as np
 
-from ..base_tool import BaseTool, ToolResult, ToolTier, ConfidenceComponents, ConfidenceCalculator
+from ..base_tool import BaseTool, ConfidenceCalculator, ConfidenceComponents, ToolResult, ToolTier
 
 
 class CalcRSI(BaseTool):
@@ -37,7 +38,7 @@ class CalcRSI(BaseTool):
         """
         self.period = period
 
-    def execute(self, prices: List[float], **kwargs) -> ToolResult:
+    def execute(self, prices: list[float], **kwargs) -> ToolResult:
         """
         Calculate RSI for given price series.
 
@@ -91,7 +92,7 @@ class CalcRSI(BaseTool):
                 error=str(e)
             )
 
-    def validate_inputs(self, prices: List[float]) -> None:
+    def validate_inputs(self, prices: list[float]) -> None:
         """Validate input parameters"""
         if not prices:
             raise ValueError("Prices list cannot be empty")
@@ -104,7 +105,7 @@ class CalcRSI(BaseTool):
         if any(p <= 0 for p in prices):
             raise ValueError("All prices must be positive")
 
-    def _calculate_rsi(self, prices: List[float]) -> float:
+    def _calculate_rsi(self, prices: list[float]) -> float:
         """
         Calculate RSI using Wilder's smoothing method.
 
@@ -141,7 +142,7 @@ class CalcRSI(BaseTool):
 
         return rsi
 
-    def _calculate_confidence(self, prices: List[float]) -> ConfidenceComponents:
+    def _calculate_confidence(self, prices: list[float]) -> ConfidenceComponents:
         """
         Calculate multi-factor confidence.
 
@@ -195,7 +196,7 @@ class CalcRSI(BaseTool):
         else:
             return 'neutral'
 
-    def get_schema(self) -> Dict[str, Any]:
+    def get_schema(self) -> dict[str, Any]:
         """Get JSON-Schema for LLM function calling"""
         return {
             "name": self.name,
