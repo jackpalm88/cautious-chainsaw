@@ -45,10 +45,10 @@ __all__ = [
     'BaseExecutionAdapter',
     'MockAdapter',
     'RealMT5Adapter',
-    
+
     # Bridge
     'MT5ExecutionBridge',
-    
+
     # Data Structures
     'Signal',
     'OrderDirection',
@@ -59,10 +59,10 @@ __all__ = [
     'PositionInfo',
     'ExecutionResult',
     'ExecutionStatus',
-    
+
     # Error Handling
     'ErrorCode',
-    
+
     # Version
     '__version__'
 ]

@@ -28,13 +28,13 @@ __all__ = [
     'ToolTier',
     'ConfidenceComponents',
     'ConfidenceCalculator',
-    
+
     # Registry
     'ToolRegistry',
     'get_registry',
     'register_tool',
     'get_tool',
-    
+
     # Atomic tools
     'CalcRSI',
     'CalcMACD',
