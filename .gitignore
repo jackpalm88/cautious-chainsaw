@@ -49,6 +49,7 @@ Thumbs.db
 data/live_trades/
 logs/
 *.log
+!reports/*.log
 config/secrets.yml
 .env
 

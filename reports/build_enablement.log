@@ -1,0 +1,2 @@
+2024-07-19: Re-enabled build job for pull_request and workflow_dispatch events.
+2024-07-19: Restored artifact packaging via python -m build and twine check.

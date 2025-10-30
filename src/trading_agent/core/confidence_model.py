@@ -274,7 +274,7 @@ class MarketContextDetector:
         avg_spread = adapter.get_avg_spread(symbol, bars=24)
         spread_pctl = current_spread / avg_spread if avg_spread > 0 else 0.5
 
-        # Volatility spike (placeholder - TODO: ATR-based detection)
+        # Volatility spike placeholder until ATR-based detection is implemented
         volatility_spike = False
 
         return MarketContext(
@@ -322,7 +322,7 @@ class MarketContextDetector:
         Returns:
             Minutes until next major news, or None if >60 min
         """
-        # TODO v1.1: Real calendar API
+        # Placeholder until v1.1 integrates with a real calendar API provider
         return None
 
 

@@ -1,0 +1,13 @@
+lint_remediation_complete: 
+- examples/demo_tools.py
+- src/trading_agent/adapters/__init__.py
+- src/trading_agent/adapters/adapter_base.py
+- src/trading_agent/adapters/adapter_mock.py
+- src/trading_agent/adapters/adapter_mt5.py
+- src/trading_agent/adapters/bridge.py
+- src/trading_agent/tools/__init__.py
+- src/trading_agent/tools/atomic/calc_macd.py
+- src/trading_agent/tools/atomic/calc_rsi.py
+- src/trading_agent/tools/base_tool.py
+- src/trading_agent/tools/registry.py
+- tests/test_tools.py

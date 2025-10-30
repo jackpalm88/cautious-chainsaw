@@ -1,0 +1,19 @@
+{
+  "check_imports": {
+    "status": "OK",
+    "failures": {},
+    "optional_skipped": {
+      "trading_agent.adapters.adapter_mt5": "MetaTrader5"
+    }
+  },
+  "compile_modules": {
+    "status": "OK"
+  },
+  "check_docstrings": {
+    "status": "OK",
+    "missing": [],
+    "optional_skipped": {
+      "trading_agent.adapters.adapter_mt5": "MetaTrader5"
+    }
+  }
+}
