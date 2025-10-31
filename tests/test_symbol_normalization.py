@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from trading_agent.core.symbol_normalization import (
+from src.trading_agent.core.symbol_normalization import (
     BinanceNormalizer,
     MT5Normalizer,
     NormalizedSymbolInfo,

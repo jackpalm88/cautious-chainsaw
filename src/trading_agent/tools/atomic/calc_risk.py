@@ -1,6 +1,6 @@
 """
 RiskFixedFractional - Atomic Tool
-Position sizing based on fixed fractional risk with symbol normalization
+Position sizing based on fixed fractional risk with full symbol normalization
 """
 
 import time
@@ -22,21 +22,21 @@ class RiskFixedFractional(BaseTool):
     - CFD indices: 1 point = direct value
     - Crypto: tick value varies with price
 
-    This tool uses symbol normalization to ensure accurate risk calculation
+    This tool uses UniversalSymbolNormalizer for accurate risk calculation
     across different brokers and asset types.
     """
 
     name = "risk_fixed_fractional"
-    version = "1.0.0"
+    version = "2.0.0"
     tier = ToolTier.ATOMIC
-    description = "Calculate position size using fixed fractional risk with multi-broker normalization"
+    description = "Calculate position size using fixed fractional risk with full multi-broker normalization"
 
     def __init__(self, normalizer: Any | None = None):
         """
         Initialize risk calculator.
 
         Args:
-            normalizer: SymbolNormalizer instance for multi-broker support
+            normalizer: UniversalSymbolNormalizer instance for multi-broker support
                        If None, uses simplified calculation (FX majors only)
         """
         self.normalizer = normalizer
@@ -79,44 +79,67 @@ class RiskFixedFractional(BaseTool):
             # Calculate stop loss value (normalized)
             if self.normalizer:
                 # Use normalizer for accurate multi-broker calculation
-                sl_value = self.normalizer.to_risk_units(
+                sl_value_per_lot = self.normalizer.to_risk_units(
                     symbol, stop_loss_pips, "pips"
                 )
             else:
                 # Simplified calculation (FX majors only)
-                sl_value = self._simplified_sl_calculation(symbol, stop_loss_pips)
+                sl_value_per_lot = self._simplified_sl_calculation(symbol, stop_loss_pips)
 
             # Calculate position size
-            if sl_value == 0:
+            if sl_value_per_lot == 0:
                 raise ValueError("Stop loss value cannot be zero")
 
-            position_size = risk_amount / sl_value
+            raw_position_size = risk_amount / sl_value_per_lot
 
-            # Round to valid lot size (if normalizer available)
+            # Round to valid lot size
             if self.normalizer:
-                position_size = self._round_to_lot_size(symbol, position_size)
+                position_size = self.normalizer.round_to_lot_size(symbol, raw_position_size)
             else:
                 # Standard rounding to 0.01 lots
-                position_size = round(position_size, 2)
+                position_size = round(raw_position_size, 2)
+
+            # Get symbol info for metadata
+            symbol_info = None
+            if self.normalizer:
+                try:
+                    symbol_info = self.normalizer.get_normalized_info(symbol)
+                except Exception:
+                    pass
 
             # Calculate latency
             latency_ms = (time.perf_counter() - start_time) * 1000
+
+            # Build metadata
+            metadata = {
+                'calculation_method': 'normalized' if self.normalizer else 'simplified',
+                'balance': balance,
+                'stop_loss_pips': stop_loss_pips,
+                'raw_position_size': round(raw_position_size, 4),
+                'sl_value_per_lot': round(sl_value_per_lot, 2),
+            }
+
+            if symbol_info:
+                metadata['symbol_info'] = {
+                    'category': symbol_info.category,
+                    'base_currency': symbol_info.base_currency,
+                    'quote_currency': symbol_info.quote_currency,
+                    'min_size': symbol_info.min_size,
+                    'max_size': symbol_info.max_size,
+                    'size_step': symbol_info.size_step,
+                }
 
             return ToolResult(
                 value={
                     'position_size': position_size,
                     'risk_amount': round(risk_amount, 2),
-                    'stop_loss_value': round(sl_value, 2),
+                    'stop_loss_value': round(sl_value_per_lot, 2),
                     'symbol': symbol,
                     'risk_pct': risk_pct,
                 },
                 confidence=0.95,  # High confidence - deterministic calculation
                 latency_ms=round(latency_ms, 2),
-                metadata={
-                    'calculation_method': 'normalized' if self.normalizer else 'simplified',
-                    'balance': balance,
-                    'stop_loss_pips': stop_loss_pips,
-                }
+                metadata=metadata
             )
 
         except Exception as e:
@@ -160,57 +183,20 @@ class RiskFixedFractional(BaseTool):
             stop_loss_pips: Stop loss in pips
 
         Returns:
-            Stop loss value in account currency
+            Stop loss value in account currency per lot
         """
         # Check if JPY pair
         if symbol.endswith("JPY"):
             # JPY pairs: 1 pip = 0.01
             pip_value = 10.0  # $10 per pip for standard lot
-            stop_loss_pips * 0.01
         else:
             # FX majors: 1 pip = 0.0001
             pip_value = 10.0  # $10 per pip for standard lot
-            stop_loss_pips * 0.0001
 
         # For standard lot (100,000 units)
         sl_value = stop_loss_pips * pip_value
 
         return sl_value
-
-    def _round_to_lot_size(self, symbol: str, position_size: float) -> float:
-        """
-        Round position size to valid lot size.
-
-        Args:
-            symbol: Trading symbol
-            position_size: Calculated position size
-
-        Returns:
-            Rounded position size
-        """
-        if not self.normalizer:
-            return round(position_size, 2)
-
-        try:
-            # Get symbol info from normalizer
-            info = self.normalizer.get_normalized_info(symbol)
-
-            # Apply constraints
-            min_lot = info.get('min_size', 0.01)
-            max_lot = info.get('max_size', 100.0)
-            lot_step = info.get('size_step', 0.01)
-
-            # Clamp to min/max
-            position_size = max(min_lot, min(position_size, max_lot))
-
-            # Round to lot step
-            position_size = round(position_size / lot_step) * lot_step
-
-            return position_size
-
-        except Exception:
-            # Fallback to standard rounding
-            return round(position_size, 2)
 
     def get_schema(self) -> dict[str, Any]:
         """Get JSON-Schema for LLM function calling"""
