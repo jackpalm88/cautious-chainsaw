@@ -15,6 +15,7 @@ from .base_tool import (
     ToolTier,
 )
 from .composite.technical_overview import TechnicalOverview
+from .execution.generate_order import GenerateOrder
 from .registry import (
     ToolRegistry,
     get_registry,
@@ -44,4 +45,7 @@ __all__ = [
 
     # Composite tools
     'TechnicalOverview',
+
+    # Execution tools
+    'GenerateOrder',
 ]
