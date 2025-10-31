@@ -1,0 +1,236 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://financial-agent.dev/schemas/inot-agents-v1.json",
+  "title": "INoT Multi-Agent Trading Decision Schema",
+  "description": "Strict schema for 4-agent INoT reasoning output with validation and auto-remediation support",
+  "type": "array",
+  "minItems": 4,
+  "maxItems": 4,
+  "items": {
+    "oneOf": [
+      { "$ref": "#/definitions/SignalAgent" },
+      { "$ref": "#/definitions/RiskAgent" },
+      { "$ref": "#/definitions/ContextAgent" },
+      { "$ref": "#/definitions/SynthesisAgent" }
+    ]
+  },
+  "definitions": {
+    "SignalAgent": {
+      "type": "object",
+      "required": ["agent", "action", "confidence", "reasoning", "key_factors"],
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "type": "string",
+          "const": "Signal",
+          "description": "Agent identifier - must be 'Signal'"
+        },
+        "action": {
+          "type": "string",
+          "enum": ["BUY", "SELL", "HOLD"],
+          "description": "Proposed trading action"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Signal strength confidence (0-1)"
+        },
+        "reasoning": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 500,
+          "description": "Technical analysis reasoning (40-500 chars)"
+        },
+        "key_factors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 50
+          },
+          "description": "Key technical factors (1-5 items)"
+        },
+        "memory_reference": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Reference to similar past setup (optional)"
+        }
+      }
+    },
+    "RiskAgent": {
+      "type": "object",
+      "required": ["agent", "approved", "confidence", "position_size_adjustment", "stop_loss_required", "reasoning"],
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "type": "string",
+          "const": "Risk",
+          "description": "Agent identifier - must be 'Risk'"
+        },
+        "approved": {
+          "type": "boolean",
+          "description": "Whether Signal proposal passes risk checks"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Risk assessment confidence (0-1)"
+        },
+        "position_size_adjustment": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "description": "Position size multiplier (0=no trade, 0.5=half, 1.0=full, 2.0=double)"
+        },
+        "stop_loss_required": {
+          "type": "boolean",
+          "description": "Whether stop-loss is mandatory for this trade"
+        },
+        "reasoning": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 500,
+          "description": "Risk assessment reasoning (40-500 chars)"
+        },
+        "veto_reason": {
+          "type": ["string", "null"],
+          "maxLength": 200,
+          "description": "Reason for veto if approved=false"
+        },
+        "memory_reference": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Reference to similar past risk scenario (optional)"
+        }
+      }
+    },
+    "ContextAgent": {
+      "type": "object",
+      "required": ["agent", "regime", "regime_confidence", "signal_regime_fit", "news_alignment", "weight_adjustment", "reasoning"],
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "type": "string",
+          "const": "Context",
+          "description": "Agent identifier - must be 'Context'"
+        },
+        "regime": {
+          "type": "string",
+          "enum": ["trending_bullish", "trending_bearish", "ranging", "volatile_uncertain"],
+          "description": "Current market regime classification"
+        },
+        "regime_confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Confidence in regime classification (0-1)"
+        },
+        "signal_regime_fit": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "How well Signal fits current regime (0-1)"
+        },
+        "news_alignment": {
+          "type": "string",
+          "enum": ["supporting", "neutral", "conflicting"],
+          "description": "Whether news supports or conflicts with Signal"
+        },
+        "weight_adjustment": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1.5,
+          "description": "Multiplier for Signal weight based on regime (0.5-1.5)"
+        },
+        "reasoning": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 500,
+          "description": "Macro context analysis (40-500 chars)"
+        },
+        "memory_reference": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Reference to similar regime performance (optional)"
+        }
+      }
+    },
+    "SynthesisAgent": {
+      "type": "object",
+      "required": ["agent", "final_decision", "reasoning_synthesis", "agent_weights_applied"],
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "type": "string",
+          "const": "Synthesis",
+          "description": "Agent identifier - must be 'Synthesis'"
+        },
+        "final_decision": {
+          "type": "object",
+          "required": ["action", "lots", "confidence"],
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": ["BUY", "SELL", "HOLD", "CLOSE"]
+            },
+            "lots": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 10.0,
+              "description": "Position size in lots (0-10)"
+            },
+            "entry_price": {
+              "type": ["number", "null"],
+              "description": "Intended entry price (null for market orders)"
+            },
+            "stop_loss": {
+              "type": ["number", "null"],
+              "description": "Stop-loss price (required if Risk.stop_loss_required=true)"
+            },
+            "take_profit": {
+              "type": ["number", "null"],
+              "description": "Take-profit price (optional)"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0,
+              "description": "Final decision confidence (0-1)"
+            }
+          }
+        },
+        "reasoning_synthesis": {
+          "type": "string",
+          "minLength": 100,
+          "maxLength": 800,
+          "description": "Integrated reasoning from all agents (100-800 chars)"
+        },
+        "agent_weights_applied": {
+          "type": "object",
+          "required": ["Signal", "Risk", "Context"],
+          "properties": {
+            "Signal": { "type": "number", "minimum": 0.0, "maximum": 2.0 },
+            "Risk": { "type": "number", "minimum": 0.0, "maximum": 2.0 },
+            "Context": { "type": "number", "minimum": 0.0, "maximum": 2.0 }
+          },
+          "description": "Effective weights used in synthesis"
+        },
+        "conflict_resolution": {
+          "type": ["string", "null"],
+          "maxLength": 300,
+          "description": "How conflicting signals were resolved (if applicable)"
+        },
+        "memory_update_intent": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 300,
+          "description": "What to store in memory for future reference"
+        }
+      }
+    }
+  }
+}
