@@ -12,8 +12,12 @@ Production-ready INoT reasoning engine with:
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .validator import INoTValidator, create_remediation_prompt
+
+if TYPE_CHECKING:
+    from ..decision.engine import FusedContext, MemorySnapshot
 
 
 @dataclass
