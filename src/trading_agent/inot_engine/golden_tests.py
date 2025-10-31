@@ -235,7 +235,7 @@ class TestResult:
     action_match: bool
     confidence_in_range: bool
     veto_match: bool
-    exact_match: Optional[bool] = None
+    exact_match: bool | None = None
 
     # Full outputs for debugging
     current_output: Decision = None

@@ -206,7 +206,7 @@ class INoTValidator:
         """
         try:
             agents = self._parse_json(original_output)
-        except:
+        except Exception:
             # Can't parse - can't remediate
             return original_output
 

@@ -6,7 +6,10 @@ Combines tool stack with INoT multi-agent reasoning
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from ..inot_engine.orchestrator import Decision
 
 from ..inot_engine import ConfidenceCalibrator, INoTOrchestrator, INoTValidator
 from ..tools import (

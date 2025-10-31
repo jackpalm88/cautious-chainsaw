@@ -118,7 +118,7 @@ class INoTOrchestrator:
             try:
                 corrected_output = self._call_llm(correction_prompt)
                 validation_result = self.validator.validate(corrected_output)
-            except:
+            except Exception:
                 pass  # Give up, return failsafe
 
             if not validation_result.valid:
