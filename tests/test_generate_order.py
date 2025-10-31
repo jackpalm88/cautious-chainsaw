@@ -4,6 +4,7 @@ Tests for GenerateOrder execution tool
 
 import asyncio
 import os
+import random
 import sys
 
 import pytest
@@ -18,6 +19,11 @@ from src.trading_agent.tools.execution.generate_order import GenerateOrder
 
 class TestGenerateOrder:
     """Test GenerateOrder execution tool"""
+
+    @pytest.fixture(autouse=True)
+    def setup_random_seed(self):
+        """Set random seed for deterministic tests"""
+        random.seed(42)
 
     @pytest.fixture
     def mock_adapter(self):
