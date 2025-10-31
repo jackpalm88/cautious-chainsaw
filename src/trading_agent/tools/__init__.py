@@ -20,6 +20,10 @@ from .registry import (
 
 from .atomic.calc_rsi import CalcRSI
 from .atomic.calc_macd import CalcMACD
+from .atomic.calc_bollinger_bands import CalcBollingerBands
+from .atomic.calc_risk import RiskFixedFractional
+
+from .composite.technical_overview import TechnicalOverview
 
 __all__ = [
     # Base classes
@@ -38,4 +42,9 @@ __all__ = [
     # Atomic tools
     'CalcRSI',
     'CalcMACD',
+    'CalcBollingerBands',
+    'RiskFixedFractional',
+    
+    # Composite tools
+    'TechnicalOverview',
 ]
