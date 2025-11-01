@@ -20,14 +20,14 @@ Expected improvements:
 def build_optimized_inot_prompt(context, memory_summary: str) -> str:
     """
     Build optimized INoT multi-agent prompt.
-    
+
     Token budget:
     - Context: ~400 tokens (reduced from 800)
     - Memory: ~600 tokens (reduced from 1000)
     - Instructions: ~1200 tokens (reduced from 1500)
     - Total: ~2200 tokens (vs 3500 before)
     """
-    
+
     prompt = f"""# Multi-Agent Trading Decision (INoT Framework)
 
 Analyze market from 4 perspectives, output JSON array with 4 objects.
@@ -129,5 +129,5 @@ Return ONLY JSON array: [Signal, Risk, Context, Synthesis]
 
 Return JSON array now:
 """
-    
+
     return prompt
