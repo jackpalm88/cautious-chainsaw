@@ -72,7 +72,7 @@ class StrategyTester:
         Returns:
             BacktestResult with performance metrics
         """
-        start_time = time.time()
+        start_time = time.perf_counter()
 
         # Reset state
         self.balance = self.initial_balance
@@ -110,7 +110,11 @@ class StrategyTester:
             self._close_position(open_position, contexts[-1])
 
         # Calculate metrics
-        backtest_duration_ms = (time.time() - start_time) * 1000
+        end_time = time.perf_counter()
+        backtest_duration_ms = (end_time - start_time) * 1000
+        # Ensure non-zero duration for safety
+        if backtest_duration_ms == 0.0:
+            backtest_duration_ms = 0.001
         result = self._calculate_metrics(strategy.name, backtest_duration_ms)
 
         return result

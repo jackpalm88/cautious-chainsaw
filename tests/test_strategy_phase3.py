@@ -142,14 +142,13 @@ class TestStrategyRegistry:
 
         # Cleanup - close all connections first (Windows file locking)
         import gc
-        import sqlite3
         del registry
         gc.collect()  # Force garbage collection to close connections
-        
+
         # Wait a bit for Windows to release the file
         import time
         time.sleep(0.1)
-        
+
         Path(db_path).unlink(missing_ok=True)
 
     def test_register_strategy(self, registry):
@@ -295,10 +294,10 @@ class TestStrategySelector:
         import gc
         del registry
         gc.collect()
-        
+
         import time
         time.sleep(0.1)
-        
+
         Path(db_path).unlink(missing_ok=True)
 
     @pytest.fixture
