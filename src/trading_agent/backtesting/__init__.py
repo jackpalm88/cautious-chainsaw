@@ -25,8 +25,7 @@ Quick Start:
     >>> print(f"Total P&L: ${results['summary']['total_pnl']:.2f}")
 
 For more examples, see:
-    examples/backtest_demo.py
-    examples/strategy_comparison.py
+    examples/demo_backtest.py
 """
 
 from .backtest_engine import (

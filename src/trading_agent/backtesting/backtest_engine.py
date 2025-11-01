@@ -1,21 +1,9 @@
-"""
-Core Backtesting Engine for Trading Agent v2.0+
+"""Core event-driven backtesting engine for the trading agent."""
 
-Event-driven backtesting framework that:
-1. Loads historical MT5 data
-2. Executes trading tools (RSI, MACD, etc.) bar-by-bar
-3. Simulates order execution with realistic slippage
-4. Tracks performance metrics (win rate, Sharpe, drawdown)
-
-Architecture inspired by FinAgent + Backtrader patterns.
-"""
-
-import time
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import pandas as pd
 import numpy as np
 
 

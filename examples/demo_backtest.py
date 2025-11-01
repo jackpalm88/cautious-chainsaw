@@ -16,9 +16,13 @@ Usage:
 import sys
 import argparse
 from datetime import datetime
+from pathlib import Path
 
-# Add parent directory to path for imports
-sys.path.insert(0, '/home/claude/financial-agent/src')
+# Ensure the project src directory is on the Python path
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_PATH = PROJECT_ROOT / "src"
+if str(SRC_PATH) not in sys.path:
+    sys.path.insert(0, str(SRC_PATH))
 
 from trading_agent.backtesting import (
     BacktestEngine,
