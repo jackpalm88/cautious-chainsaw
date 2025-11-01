@@ -201,8 +201,8 @@ class INoTOrchestrator:
         - Agent instructions: ~1500 tokens
         - Total: ~3000-3500 tokens input
         """
-        # Memory summary with token budget
-        memory_summary = memory.to_summary(max_tokens=1000)
+        # Memory summary with reduced token budget (optimization)
+        memory_summary = memory.to_summary(max_tokens=600)
 
         # Build prompt (full template from INoT Deep Dive)
         prompt = f"""
@@ -222,8 +222,8 @@ You will analyze the market context from 4 specialized perspectives, then synthe
 - Volume: {context.volume}
 
 **News & Sentiment:**
-- Latest news: "{context.latest_news[:200]}..."
-- Sentiment score: {context.sentiment:.2f} (-1=bearish, +1=bullish)
+- Latest news: "{context.latest_news[:120]}..."
+- Sentiment: {context.sentiment:+.1f}
 
 **Position Status:**
 - Current position: {context.current_position or 'FLAT'}
