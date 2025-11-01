@@ -25,8 +25,9 @@ class SimpleResponse:
     """
     Simple response object matching INoT's expected interface.
     
-    INoT orchestrator expects LLM responses to have a .content attribute
-    containing the raw text response (typically JSON string).
+    INoT orchestrator expects LLM responses to have:
+    - .content attribute (raw text response, typically JSON)
+    - .usage attribute (dict with token counts)
     """
     content: str
     
@@ -34,6 +35,7 @@ class SimpleResponse:
     latency_ms: float = 0.0
     tokens_used: int = 0
     model_used: str = ""
+    usage: dict[str, int] | None = None  # For INoT cost tracking
 
 
 class INoTLLMAdapter:
@@ -119,11 +121,30 @@ class INoTLLMAdapter:
             )
             
             # Adapt response to SimpleResponse format
+            # Calculate input/output tokens from raw response
+            usage_dict = {}
+            if hasattr(response, 'raw_response') and response.raw_response:
+                raw = response.raw_response
+                if 'usage' in raw:
+                    usage_dict = {
+                        'input_tokens': raw['usage'].get('input_tokens', 0),
+                        'output_tokens': raw['usage'].get('output_tokens', 0)
+                    }
+            
+            # Fallback: estimate from total tokens (50/50 split)
+            if not usage_dict:
+                half_tokens = response.tokens_used // 2
+                usage_dict = {
+                    'input_tokens': half_tokens,
+                    'output_tokens': half_tokens
+                }
+            
             return SimpleResponse(
                 content=response.content,
                 latency_ms=response.latency_ms,
                 tokens_used=response.tokens_used,
-                model_used=response.model_used
+                model_used=response.model_used,
+                usage=usage_dict
             )
             
         finally:
