@@ -248,7 +248,7 @@ def validate_integration_requirements():
 
     # Check Anthropic package
     try:
-        import anthropic
+        import anthropic  # noqa: F401
         print("✅ Anthropic package installed")
     except ImportError:
         issues.append("❌ Anthropic package not installed (pip install anthropic)")
@@ -258,7 +258,7 @@ def validate_integration_requirements():
         import requests
         requests.get("https://api.anthropic.com", timeout=5)
         print("✅ Network connectivity to Anthropic API")
-    except:
+    except Exception:
         issues.append("⚠️ Cannot reach Anthropic API (check network)")
 
     if issues:

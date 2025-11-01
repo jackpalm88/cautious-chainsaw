@@ -154,9 +154,9 @@ class LLMIntegrationSetup:
 
             # Check other requirements
             try:
-                import dataclasses
-                import json
-                import typing
+                import dataclasses  # noqa: F401
+                import json  # noqa: F401
+                import typing  # noqa: F401
                 self.log("✅ Standard libraries available")
             except ImportError as e:
                 self.log(f"❌ Missing standard library: {e}", "ERROR")
