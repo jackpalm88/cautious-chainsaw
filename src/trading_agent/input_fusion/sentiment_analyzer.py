@@ -3,7 +3,6 @@ Sentiment Analyzer - News sentiment analysis
 Supports rule-based and LLM-based sentiment scoring
 """
 
-import re
 from typing import Any
 
 

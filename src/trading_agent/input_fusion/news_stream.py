@@ -5,11 +5,11 @@ Supports mock and API modes (NewsAPI, Alpha Vantage)
 
 import asyncio
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 
 from .data_stream import DataStream, StreamEvent
-from .news_normalizer import NewsNormalizer, NormalizedNews
+from .news_normalizer import NewsNormalizer
 from .symbol_relevance import SymbolRelevanceScorer
 
 
