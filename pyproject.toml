@@ -50,6 +50,9 @@ dependencies = [
     # Utilities
     "python-dateutil>=2.8.2",
     "pytz>=2023.3",
+
+    # LLM Integration
+    "anthropic>=0.8.0",
 ]
 
 [project.optional-dependencies]
@@ -81,7 +84,7 @@ dev = [
 
 llm = [
     # LLM Integration (optional - user provides API keys)
-    "anthropic>=0.8.0",
+    # anthropic moved to core dependencies for INoT integration
     "openai>=1.3.0",
 ]
 
