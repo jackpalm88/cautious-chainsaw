@@ -1,0 +1,27 @@
+name: rsi_oversold_mean_reversion
+description: Buy when RSI is oversold and MACD histogram is positive (mean reversion)
+metadata:
+  author: Manus AI
+  version: 1.0.0
+  tags:
+    - RSI
+    - mean-reversion
+    - oversold
+  priority: 7
+  active_regimes:
+    - ranging
+conditions:
+  - field: rsi
+    operator: "<"
+    value: 30
+  - field: macd_histogram
+    operator: ">"
+    value: 0
+  - field: regime
+    operator: "=="
+    value: "ranging"
+action: BUY
+risk:
+  stop_loss_percent: 1.5
+  take_profit_percent: 3.0
+  max_risk_per_trade_percent: 1.0

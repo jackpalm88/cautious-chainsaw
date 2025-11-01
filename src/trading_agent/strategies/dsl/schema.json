@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trading Strategy DSL",
+  "description": "Domain-specific language for defining trading strategies",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique strategy name (snake_case)",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable strategy description"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string",
+          "description": "Strategy author"
+        },
+        "version": {
+          "type": "string",
+          "description": "Strategy version (semver)",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Strategy tags for categorization"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Strategy priority (1=lowest, 10=highest)"
+        },
+        "active_regimes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["trending", "ranging", "volatile"]
+          },
+          "description": "Market regimes where strategy is active"
+        },
+        "avoid_news_events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "News events to avoid (e.g., FOMC, NFP)"
+        }
+      },
+      "required": ["author", "version"]
+    },
+    "conditions": {
+      "type": "array",
+      "description": "List of conditions that must ALL be true (AND logic)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Field from FusedContext (e.g., 'rsi', 'macd_histogram')"
+          },
+          "operator": {
+            "type": "string",
+            "enum": ["<", "<=", ">", ">=", "==", "!="],
+            "description": "Comparison operator"
+          },
+          "value": {
+            "description": "Value to compare against",
+            "oneOf": [
+              {"type": "number"},
+              {"type": "string"},
+              {"type": "boolean"}
+            ]
+          }
+        },
+        "required": ["field", "operator", "value"]
+      },
+      "minItems": 1
+    },
+    "action": {
+      "type": "string",
+      "enum": ["BUY", "SELL", "HOLD"],
+      "description": "Trading action to take when conditions are met"
+    },
+    "risk": {
+      "type": "object",
+      "properties": {
+        "stop_loss_percent": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 10.0,
+          "description": "Stop loss as percentage of entry price"
+        },
+        "take_profit_percent": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 50.0,
+          "description": "Take profit as percentage of entry price"
+        },
+        "max_risk_per_trade_percent": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 5.0,
+          "description": "Maximum risk per trade as percentage of account equity"
+        }
+      },
+      "required": ["stop_loss_percent", "max_risk_per_trade_percent"]
+    }
+  },
+  "required": ["name", "description", "metadata", "conditions", "action", "risk"]
+}
