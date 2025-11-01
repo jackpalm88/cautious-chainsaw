@@ -152,7 +152,7 @@ class InputFusionEngine:
 
                 # Cleanup old events from aligner
                 cutoff_time = datetime.now() - timedelta(seconds=self.cleanup_interval)
-                removed = self.aligner.cleanup_old_events(cutoff_time)
+                self.aligner.cleanup_old_events(cutoff_time)
 
             except Exception:
                 pass

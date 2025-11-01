@@ -45,7 +45,7 @@ class TemporalAligner:
 
         # Trim buffer if too large
         if len(self.buffers[stream_id]) > self.max_buffer_size:
-            dropped = self.buffers[stream_id].pop(0)
+            self.buffers[stream_id].pop(0)
             self.dropped_count += 1
 
     def get_aligned_events(
