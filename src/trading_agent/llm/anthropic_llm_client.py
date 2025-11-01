@@ -129,7 +129,7 @@ class AnthropicLLMClient:
 
         except Exception as e:
             logger.error(f"Claude API error: {str(e)}")
-            raise RuntimeError(f"LLM completion failed: {str(e)}")
+            raise RuntimeError(f"LLM completion failed: {str(e)}") from e
 
     def reason_with_tools(self,
                          context: dict[str, Any],
@@ -310,7 +310,7 @@ Respond with JSON only."""
             return decision
 
         except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON response: {str(e)}")
+            raise ValueError(f"Invalid JSON response: {str(e)}") from e
 
     def _calculate_confidence(self,
                              response: Any,
@@ -341,7 +341,7 @@ Respond with JSON only."""
         try:
             json.loads(content.strip().replace("```json", "").replace("```", ""))
             confidence += 0.1
-        except:
+        except Exception:
             confidence -= 0.2  # Penalty for non-JSON responses
 
         return min(1.0, max(0.0, confidence))
