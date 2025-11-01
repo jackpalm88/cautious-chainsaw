@@ -71,9 +71,15 @@ class FusedContext:
     risk_percent: float = 1.0
     stop_loss_pips: float | None = None
 
+    # Market context (from MarketContext tool)
+    regime: str | None = None  # trending, ranging, volatile
+    volatility: float | None = None  # ATR value
+    volatility_normalized: float | None = None
+    trend_strength: float | None = None  # 0.0-1.0
+
     # Complexity indicators
     has_major_news: bool = False
-    market_volatility: str | None = None
+    market_volatility: str | None = None  # Deprecated: use 'regime' instead
 
 
 @dataclass

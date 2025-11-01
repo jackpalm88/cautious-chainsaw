@@ -7,6 +7,7 @@ from .atomic.calc_bollinger_bands import CalcBollingerBands
 from .atomic.calc_macd import CalcMACD
 from .atomic.calc_risk import RiskFixedFractional
 from .atomic.calc_rsi import CalcRSI
+from .atomic.market_context import MarketContext
 from .base_tool import (
     BaseTool,
     ConfidenceCalculator,
@@ -42,6 +43,7 @@ __all__ = [
     'CalcMACD',
     'CalcBollingerBands',
     'RiskFixedFractional',
+    'MarketContext',
 
     # Composite tools
     'TechnicalOverview',
