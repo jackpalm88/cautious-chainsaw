@@ -36,7 +36,7 @@ async def demo_news_normalizer():
 
     normalized = normalizer.normalize_newsapi(raw_newsapi)
 
-    print(f"\n📰 NEWSAPI NORMALIZATION:")
+    print("\n📰 NEWSAPI NORMALIZATION:")
     print(f"  Title: {normalized.title}")
     print(f"  Source: {normalized.source}")
     print(f"  Published: {normalized.published_at}")
@@ -84,7 +84,7 @@ async def demo_symbol_relevance():
     # Calculate relevance for different symbols
     symbols = ["EURUSD", "XAUUSD", "BTCUSD"]
 
-    print(f"\n📊 RELEVANCE SCORES:")
+    print("\n📊 RELEVANCE SCORES:")
     print(f"{'News Title':<50} {'Symbol':<10} {'Score':<10}")
     print("-" * 70)
 
@@ -130,7 +130,7 @@ async def demo_sentiment_analysis():
         },
     ]
 
-    print(f"\n💭 SENTIMENT SCORES:")
+    print("\n💭 SENTIMENT SCORES:")
     print(f"{'News Title':<50} {'Sentiment':<12} {'Score':<8} {'Conf':<8}")
     print("-" * 78)
 
@@ -171,16 +171,16 @@ async def demo_news_stream():
     engine.add_stream(price_stream2)
     engine.add_stream(news_stream)
 
-    print(f"\n🔄 Starting Input Fusion with News...")
+    print("\n🔄 Starting Input Fusion with News...")
     print(f"  Symbols: {', '.join(symbols)}")
-    print(f"  Streams: 2 price + 1 news")
-    print(f"  News Fetch Interval: 2s")
+    print("  Streams: 2 price + 1 news")
+    print("  News Fetch Interval: 2s")
 
     # Start engine
     await engine.start()
 
     # Run for 5 seconds
-    print(f"\n⏳ Collecting data for 5 seconds...")
+    print("\n⏳ Collecting data for 5 seconds...")
     await asyncio.sleep(5)
 
     # Stop engine
@@ -189,7 +189,7 @@ async def demo_news_stream():
     # Get statistics
     stats = engine.get_stats()
 
-    print(f"\n📊 FUSION STATISTICS:")
+    print("\n📊 FUSION STATISTICS:")
     print(f"  Total Fusions: {stats['fusion_count']}")
     print(f"  Active Streams: {stats['stream_count']}")
     print(f"  Sync Window: {stats['sync_window_ms']}ms")
@@ -199,12 +199,12 @@ async def demo_news_stream():
     snapshot = engine.get_latest_snapshot()
 
     if snapshot:
-        print(f"\n📸 LATEST FUSED SNAPSHOT:")
+        print("\n📸 LATEST FUSED SNAPSHOT:")
         print(f"  Timestamp: {snapshot.timestamp.strftime('%H:%M:%S.%f')[:-3]}")
         print(f"  Streams: {len(snapshot.data)}")
 
         # Show prices
-        print(f"\n  💱 PRICES:")
+        print("\n  💱 PRICES:")
         for stream_id, data in snapshot.data.items():
             if "price" in stream_id:
                 symbol = data.get("symbol", "Unknown")
@@ -214,7 +214,7 @@ async def demo_news_stream():
                 print(f"    {symbol:<8} Bid: {bid:.5f}  Ask: {ask:.5f}  Spread: {spread:.5f}")
 
         # Show news
-        print(f"\n  📰 NEWS:")
+        print("\n  📰 NEWS:")
         for stream_id, data in snapshot.data.items():
             if "news" in stream_id:
                 title = data.get("title", "No title")

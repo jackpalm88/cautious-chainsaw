@@ -32,7 +32,7 @@ async def main():
     symbols = ["EURUSD", "GBPUSD", "USDJPY"]
     initial_prices = [1.1, 1.3, 150.0]
 
-    for symbol, price in zip(symbols, initial_prices):
+    for symbol, price in zip(symbols, initial_prices, strict=False):
         stream = PriceStream(
             symbol=symbol,
             mode="mock",
@@ -63,7 +63,7 @@ async def main():
         print(f"  Timestamp: {snapshot.timestamp.strftime('%H:%M:%S.%f')[:-3]}")
         print(f"  Streams: {snapshot.metadata.get('stream_count', 0)}")
         print("\n  📊 PRICES:")
-        for stream_id, data in snapshot.data.items():
+        for _stream_id, data in snapshot.data.items():
             symbol = data["symbol"]
             bid = data["bid"]
             ask = data["ask"]
