@@ -85,10 +85,7 @@ class LLMIntegrationSetup:
             return False
 
         # Check for existing v1.4 files
-        key_files = [
-            "decision/engine.py",
-            "inot_engine/orchestrator.py"
-        ]
+        key_files = ["decision/engine.py", "inot_engine/orchestrator.py"]
 
         for file_path in key_files:
             full_path = self.src_dir / file_path
@@ -142,9 +139,11 @@ class LLMIntegrationSetup:
 
         try:
             # Install Anthropic package
-            result = subprocess.run([
-                sys.executable, "-m", "pip", "install", "anthropic"
-            ], capture_output=True, text=True)
+            result = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "anthropic"],
+                capture_output=True,
+                text=True,
+            )
 
             if result.returncode == 0:
                 self.log("✅ Anthropic package installed")
@@ -157,6 +156,7 @@ class LLMIntegrationSetup:
                 import dataclasses  # noqa: F401
                 import json  # noqa: F401
                 import typing  # noqa: F401
+
                 self.log("✅ Standard libraries available")
             except ImportError as e:
                 self.log(f"❌ Missing standard library: {e}", "ERROR")
@@ -190,7 +190,7 @@ class LLMIntegrationSetup:
 
             source_files = [
                 ("anthropic_llm_client.py", "anthropic_client.py"),
-                ("llm_integration_guide.py", "integration_guide.py")
+                ("llm_integration_guide.py", "integration_guide.py"),
             ]
 
             for source_name, target_name in source_files:
@@ -218,7 +218,7 @@ class LLMIntegrationSetup:
             # Files to update
             files_to_update = [
                 self.src_dir / "decision" / "engine.py",
-                self.src_dir / "inot_engine" / "orchestrator.py"
+                self.src_dir / "inot_engine" / "orchestrator.py",
             ]
 
             for file_path in files_to_update:
@@ -285,13 +285,13 @@ class LLMIntegrationSetup:
                     "max_tokens": 4000,
                     "temperature": 0.0,
                     "enable_real_llm": True,
-                    "fallback_to_mock": True
+                    "fallback_to_mock": True,
                 },
                 "trading": {
                     "max_risk_per_trade": 0.02,
                     "confidence_threshold": 0.7,
-                    "max_tools_per_decision": 5
-                }
+                    "max_tools_per_decision": 5,
+                },
             }
 
             # Production config
@@ -300,10 +300,7 @@ class LLMIntegrationSetup:
             prod_config["llm"]["temperature"] = 0.0
 
             # Save configs
-            configs = [
-                ("development.json", dev_config),
-                ("production.json", prod_config)
-            ]
+            configs = [("development.json", dev_config), ("production.json", prod_config)]
 
             for filename, config in configs:
                 config_path = config_dir / filename
@@ -328,6 +325,7 @@ class LLMIntegrationSetup:
 
             try:
                 from trading_agent.llm.anthropic_client import AnthropicLLMClient
+
                 self.log("✅ AnthropicLLMClient import successful")
             except ImportError as e:
                 self.log(f"⚠️ Import test failed: {e}")
@@ -408,6 +406,7 @@ class LLMIntegrationSetup:
         with open(log_file, "w") as f:
             f.write("\n".join(self.setup_log))
 
+
 def main():
     """Main setup function"""
 
@@ -437,6 +436,7 @@ def main():
     else:
         print("\n❌ Setup failed. Check the logs for details.")
         print("You may need to complete some steps manually.")
+
 
 if __name__ == "__main__":
     main()

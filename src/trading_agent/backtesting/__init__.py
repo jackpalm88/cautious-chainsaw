@@ -35,16 +35,13 @@ __all__ = [
     "BacktestTrade",
     "EventType",
     "quick_backtest",
-
     # Data loading
     "MT5DataLoader",
     "load_mt5_csv",
     "generate_test_data",
-
     # Performance
     "PerformanceMetrics",
     "PerformanceCalculator",
-
     # Strategies
     "rsi_strategy",
     "macd_strategy",

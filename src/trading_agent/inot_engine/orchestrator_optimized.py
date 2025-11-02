@@ -17,6 +17,7 @@ Expected improvements:
 - JSON compliance: Maintained (>95%)
 """
 
+
 def build_optimized_inot_prompt(context, memory_summary: str) -> str:
     """
     Build optimized INoT multi-agent prompt.

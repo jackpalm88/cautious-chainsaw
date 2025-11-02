@@ -139,7 +139,7 @@ class StrategyCompiler:
                         "strategy_name": self.name,
                         "strategy_version": self.metadata["version"],
                         "priority": self.metadata.get("priority", 5),
-                    }
+                    },
                 )
 
             def _evaluate_condition(self, condition: dict, context: "FusedContext") -> bool:

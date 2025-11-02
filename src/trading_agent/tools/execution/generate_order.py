@@ -52,7 +52,7 @@ class GenerateOrder(BaseTool):
         take_profit: float | None = None,
         confidence: float = 0.0,
         reasoning: str = "",
-        **kwargs
+        **kwargs,
     ) -> ToolResult:
         """
         Execute trading order.
@@ -75,10 +75,7 @@ class GenerateOrder(BaseTool):
         try:
             # Validate inputs
             self.validate_inputs(
-                symbol=symbol,
-                direction=direction,
-                size=size,
-                confidence=confidence
+                symbol=symbol, direction=direction, size=size, confidence=confidence
             )
 
             # Check bridge availability
@@ -92,7 +89,9 @@ class GenerateOrder(BaseTool):
             try:
                 order_direction = OrderDirection[direction.upper()]
             except KeyError as e:
-                raise ValueError(f"Invalid direction: {direction}. Must be 'LONG' or 'SHORT'") from e
+                raise ValueError(
+                    f"Invalid direction: {direction}. Must be 'LONG' or 'SHORT'"
+                ) from e
 
             # Create signal
             signal = Signal(
@@ -106,20 +105,19 @@ class GenerateOrder(BaseTool):
                 metadata={
                     'tool': self.name,
                     'version': self.version,
-                }
+                },
             )
 
             # Execute via bridge (synchronous wrapper for async)
             import asyncio
+
             try:
                 loop = asyncio.get_event_loop()
             except RuntimeError:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
 
-            execution_result = loop.run_until_complete(
-                self._execute_signal(signal)
-            )
+            execution_result = loop.run_until_complete(self._execute_signal(signal))
 
             # Calculate latency
             latency_ms = (time.perf_counter() - start_time) * 1000
@@ -143,7 +141,7 @@ class GenerateOrder(BaseTool):
                         'symbol': symbol,
                         'direction': direction,
                         'size': size,
-                    }
+                    },
                 )
             else:
                 # Execution failed
@@ -151,21 +149,20 @@ class GenerateOrder(BaseTool):
                     value={
                         'success': False,
                         'status': execution_result.status.value,
-                        'error_code': execution_result.error_code.value if execution_result.error_code else None,
+                        'error_code': execution_result.error_code.value
+                        if execution_result.error_code
+                        else None,
                         'error_message': execution_result.error_message,
                     },
                     confidence=0.0,  # Failed execution = 0 confidence
                     latency_ms=round(latency_ms, 2),
-                    error=execution_result.error_message
+                    error=execution_result.error_message,
                 )
 
         except Exception as e:
             latency_ms = (time.perf_counter() - start_time) * 1000
             return ToolResult(
-                value=None,
-                confidence=0.0,
-                latency_ms=round(latency_ms, 2),
-                error=str(e)
+                value=None, confidence=0.0, latency_ms=round(latency_ms, 2), error=str(e)
             )
 
     async def _execute_signal(self, signal: Signal) -> ExecutionResult:
@@ -186,13 +183,7 @@ class GenerateOrder(BaseTool):
 
         return result
 
-    def validate_inputs(
-        self,
-        symbol: str,
-        direction: str,
-        size: float,
-        confidence: float
-    ) -> None:
+    def validate_inputs(self, symbol: str, direction: str, size: float, confidence: float) -> None:
         """Validate input parameters"""
         if not symbol or not isinstance(symbol, str):
             raise ValueError("Symbol must be a non-empty string")

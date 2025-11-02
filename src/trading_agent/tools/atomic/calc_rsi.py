@@ -80,16 +80,13 @@ class CalcRSI(BaseTool):
                     'confidence_components': confidence_components.to_dict(),
                     'samples_used': len(prices),
                     'required_samples': self.period + 1,
-                }
+                },
             )
 
         except Exception as e:
             latency_ms = (time.perf_counter() - start_time) * 1000
             return ToolResult(
-                value=None,
-                confidence=0.0,
-                latency_ms=round(latency_ms, 2),
-                error=str(e)
+                value=None, confidence=0.0, latency_ms=round(latency_ms, 2), error=str(e)
             )
 
     def validate_inputs(self, prices: list[float]) -> None:
@@ -98,9 +95,7 @@ class CalcRSI(BaseTool):
             raise ValueError("Prices list cannot be empty")
 
         if len(prices) < self.period + 1:
-            raise ValueError(
-                f"Insufficient data: need {self.period + 1} prices, got {len(prices)}"
-            )
+            raise ValueError(f"Insufficient data: need {self.period + 1} prices, got {len(prices)}")
 
         if any(p <= 0 for p in prices):
             raise ValueError("All prices must be positive")
@@ -125,8 +120,8 @@ class CalcRSI(BaseTool):
         losses = np.where(deltas < 0, -deltas, 0)
 
         # Calculate average gain and loss (Wilder's smoothing)
-        avg_gain = np.mean(gains[:self.period])
-        avg_loss = np.mean(losses[:self.period])
+        avg_gain = np.mean(gains[: self.period])
+        avg_loss = np.mean(losses[: self.period])
 
         # Calculate subsequent smoothed values
         for i in range(self.period, len(gains)):
@@ -166,7 +161,7 @@ class CalcRSI(BaseTool):
 
         # Data quality (check for gaps and flat periods)
         gaps = 0  # Assume no gaps for now
-        flat_periods = sum(1 for i in range(1, len(prices)) if prices[i] == prices[i-1])
+        flat_periods = sum(1 for i in range(1, len(prices)) if prices[i] == prices[i - 1])
         data_quality = ConfidenceCalculator.data_quality(gaps, flat_periods, len(prices))
 
         # Indicator agreement (single indicator, so neutral)

@@ -11,15 +11,17 @@ import numpy as np
 
 class EventType(Enum):
     """Backtest event types."""
+
     MARKET = "market"  # New bar received
     SIGNAL = "signal"  # Tool generated signal
-    ORDER = "order"    # Order placed
-    FILL = "fill"      # Order executed
+    ORDER = "order"  # Order placed
+    FILL = "fill"  # Order executed
 
 
 @dataclass
 class BacktestConfig:
     """Backtesting configuration."""
+
     initial_capital: float = 10000.0
     commission: float = 0.0002  # 0.02% per trade
     slippage_pips: float = 0.5  # Average slippage in pips
@@ -40,6 +42,7 @@ class BacktestConfig:
 @dataclass
 class BacktestBar:
     """Single bar of historical data."""
+
     timestamp: datetime
     symbol: str
     timeframe: str
@@ -54,6 +57,7 @@ class BacktestBar:
 @dataclass
 class BacktestPosition:
     """Open position tracking."""
+
     symbol: str
     direction: str  # "buy" or "sell"
     entry_price: float
@@ -67,6 +71,7 @@ class BacktestPosition:
 @dataclass
 class BacktestTrade:
     """Completed trade record."""
+
     symbol: str
     direction: str
     entry_price: float
@@ -114,7 +119,7 @@ class BacktestEngine:
             EventType.MARKET: [],
             EventType.SIGNAL: [],
             EventType.ORDER: [],
-            EventType.FILL: []
+            EventType.FILL: [],
         }
 
         # Performance tracking
@@ -186,7 +191,9 @@ class BacktestEngine:
             raise ValueError("No strategy defined. Call add_strategy() first.")
 
         self.start_time = datetime.now()
-        print(f"🚀 Starting backtest: {len(self.data)} bars from {self.data[0].timestamp} to {self.data[-1].timestamp}")
+        print(
+            f"🚀 Starting backtest: {len(self.data)} bars from {self.data[0].timestamp} to {self.data[-1].timestamp}"
+        )
 
         # Main event loop
         for idx, bar in enumerate(self.data):
@@ -224,21 +231,27 @@ class BacktestEngine:
 
             # Update unrealized P&L
             if position.direction == "buy":
-                position.unrealized_pnl = (current_price - position.entry_price) * position.size * 100000  # Assuming standard lot
+                position.unrealized_pnl = (
+                    (current_price - position.entry_price) * position.size * 100000
+                )  # Assuming standard lot
             else:  # sell
-                position.unrealized_pnl = (position.entry_price - current_price) * position.size * 100000
+                position.unrealized_pnl = (
+                    (position.entry_price - current_price) * position.size * 100000
+                )
 
             # Check stop loss
             if position.stop_loss:
-                if (position.direction == "buy" and bar.low <= position.stop_loss) or \
-                   (position.direction == "sell" and bar.high >= position.stop_loss):
+                if (position.direction == "buy" and bar.low <= position.stop_loss) or (
+                    position.direction == "sell" and bar.high >= position.stop_loss
+                ):
                     self._close_position(position, position.stop_loss, bar, "sl")
                     continue
 
             # Check take profit
             if position.take_profit:
-                if (position.direction == "buy" and bar.high >= position.take_profit) or \
-                   (position.direction == "sell" and bar.low <= position.take_profit):
+                if (position.direction == "buy" and bar.high >= position.take_profit) or (
+                    position.direction == "sell" and bar.low <= position.take_profit
+                ):
                     self._close_position(position, position.take_profit, bar, "tp")
                     continue
 
@@ -272,7 +285,7 @@ class BacktestEngine:
             size=size,
             stop_loss=sl,
             take_profit=tp,
-            entry_time=bar.timestamp
+            entry_time=bar.timestamp,
         )
 
         self.positions.append(position)
@@ -283,7 +296,9 @@ class BacktestEngine:
 
         print(f"📊 {action.upper()} {size} lots @ {entry_price:.5f} | SL: {sl} | TP: {tp}")
 
-    def _close_position(self, position: BacktestPosition, exit_price: float, bar: BacktestBar, reason: str) -> None:
+    def _close_position(
+        self, position: BacktestPosition, exit_price: float, bar: BacktestBar, reason: str
+    ) -> None:
         """Close an open position."""
         # Calculate P&L
         if position.direction == "buy":
@@ -299,7 +314,9 @@ class BacktestEngine:
         self.capital += pnl
 
         # Record trade
-        bars_held = self.current_bar_idx - self.data.index(next(b for b in self.data if b.timestamp == position.entry_time))
+        bars_held = self.current_bar_idx - self.data.index(
+            next(b for b in self.data if b.timestamp == position.entry_time)
+        )
         trade = BacktestTrade(
             symbol=position.symbol,
             direction=position.direction,
@@ -313,7 +330,7 @@ class BacktestEngine:
             commission=commission,
             slippage=self.config.slippage_pips,
             bars_held=bars_held,
-            exit_reason=reason
+            exit_reason=reason,
         )
 
         self.closed_trades.append(trade)
@@ -323,28 +340,29 @@ class BacktestEngine:
         for handler in self.event_handlers[EventType.FILL]:
             handler(trade)
 
-        print(f"✅ Closed {position.direction} @ {exit_price:.5f} | P&L: ${pnl:.2f} | Reason: {reason}")
+        print(
+            f"✅ Closed {position.direction} @ {exit_price:.5f} | P&L: ${pnl:.2f} | Reason: {reason}"
+        )
 
     def _record_equity(self, bar: BacktestBar) -> None:
         """Track equity curve."""
         unrealized_pnl = sum(pos.unrealized_pnl for pos in self.positions)
         total_equity = self.capital + unrealized_pnl
 
-        self.equity_curve.append({
-            "timestamp": bar.timestamp,
-            "capital": self.capital,
-            "unrealized_pnl": unrealized_pnl,
-            "total_equity": total_equity,
-            "open_positions": len(self.positions)
-        })
+        self.equity_curve.append(
+            {
+                "timestamp": bar.timestamp,
+                "capital": self.capital,
+                "unrealized_pnl": unrealized_pnl,
+                "total_equity": total_equity,
+                "open_positions": len(self.positions),
+            }
+        )
 
     def _generate_report(self) -> dict[str, Any]:
         """Generate comprehensive performance report."""
         if not self.closed_trades:
-            return {
-                "status": "no_trades",
-                "message": "No trades were executed during backtest"
-            }
+            return {"status": "no_trades", "message": "No trades were executed during backtest"}
 
         # Basic metrics
         total_trades = len(self.closed_trades)
@@ -359,7 +377,9 @@ class BacktestEngine:
 
         # Risk metrics
         returns = [t.return_pct for t in self.closed_trades]
-        sharpe_ratio = (np.mean(returns) / np.std(returns)) * np.sqrt(252) if np.std(returns) > 0 else 0
+        sharpe_ratio = (
+            (np.mean(returns) / np.std(returns)) * np.sqrt(252) if np.std(returns) > 0 else 0
+        )
 
         # Drawdown
         equity_series = [e["total_equity"] for e in self.equity_curve]
@@ -368,7 +388,9 @@ class BacktestEngine:
         max_drawdown = np.min(drawdowns) if len(drawdowns) > 0 else 0
 
         # Duration
-        duration = self.end_time - self.start_time if self.start_time and self.end_time else timedelta(0)
+        duration = (
+            self.end_time - self.start_time if self.start_time and self.end_time else timedelta(0)
+        )
 
         return {
             "status": "success",
@@ -377,7 +399,7 @@ class BacktestEngine:
                 "final_capital": self.capital,
                 "total_pnl": total_pnl,
                 "return_pct": (total_pnl / self.config.initial_capital) * 100,
-                "duration_seconds": duration.total_seconds()
+                "duration_seconds": duration.total_seconds(),
             },
             "trades": {
                 "total": total_trades,
@@ -386,12 +408,12 @@ class BacktestEngine:
                 "win_rate": win_rate,
                 "avg_win": avg_win,
                 "avg_loss": avg_loss,
-                "profit_factor": abs(avg_win / avg_loss) if avg_loss != 0 else float('inf')
+                "profit_factor": abs(avg_win / avg_loss) if avg_loss != 0 else float('inf'),
             },
             "risk_metrics": {
                 "sharpe_ratio": sharpe_ratio,
                 "max_drawdown_pct": max_drawdown * 100,
-                "avg_bars_per_trade": np.mean([t.bars_held for t in self.closed_trades])
+                "avg_bars_per_trade": np.mean([t.bars_held for t in self.closed_trades]),
             },
             "equity_curve": self.equity_curve,
             "all_trades": [
@@ -401,18 +423,16 @@ class BacktestEngine:
                     "direction": t.direction,
                     "pnl": t.pnl,
                     "return_pct": t.return_pct,
-                    "exit_reason": t.exit_reason
+                    "exit_reason": t.exit_reason,
                 }
                 for t in self.closed_trades
-            ]
+            ],
         }
 
 
 # Helper function for quick backtests
 def quick_backtest(
-    data: list[BacktestBar],
-    strategy_func: Callable,
-    config: BacktestConfig | None = None
+    data: list[BacktestBar], strategy_func: Callable, config: BacktestConfig | None = None
 ) -> dict[str, Any]:
     """
     Convenience function for running a backtest.

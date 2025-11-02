@@ -59,9 +59,7 @@ class StrategyTester:
         self.trades: list[dict[str, Any]] = []
         self.equity_curve: list[float] = []
 
-    def backtest(
-        self, strategy: BaseStrategy, contexts: list[FusedContext]
-    ) -> BacktestResult:
+    def backtest(self, strategy: BaseStrategy, contexts: list[FusedContext]) -> BacktestResult:
         """
         Run backtest on strategy with historical contexts
 
@@ -119,9 +117,7 @@ class StrategyTester:
 
         return result
 
-    def _open_position(
-        self, signal: StrategySignal, context: FusedContext
-    ) -> dict[str, Any]:
+    def _open_position(self, signal: StrategySignal, context: FusedContext) -> dict[str, Any]:
         """Open new position"""
         # Calculate position size (simplified - use 10% of balance)
         position_size = self.balance * 0.1 / context.price
@@ -172,9 +168,7 @@ class StrategyTester:
         self.balance += pnl
 
         # Record trade
-        trade_duration_ms = (
-            context.timestamp - position["entry_time"]
-        ).total_seconds() * 1000
+        trade_duration_ms = (context.timestamp - position["entry_time"]).total_seconds() * 1000
 
         self.trades.append(
             {
@@ -189,28 +183,20 @@ class StrategyTester:
             }
         )
 
-    def _calculate_equity(
-        self, position: dict[str, Any] | None, context: FusedContext
-    ) -> float:
+    def _calculate_equity(self, position: dict[str, Any] | None, context: FusedContext) -> float:
         """Calculate current equity"""
         if position is None:
             return self.balance
 
         # Calculate unrealized P&L
         if position["action"] == "BUY":
-            unrealized_pnl = (context.price - position["entry_price"]) * position[
-                "size"
-            ]
+            unrealized_pnl = (context.price - position["entry_price"]) * position["size"]
         else:  # SELL
-            unrealized_pnl = (position["entry_price"] - context.price) * position[
-                "size"
-            ]
+            unrealized_pnl = (position["entry_price"] - context.price) * position["size"]
 
         return self.balance + unrealized_pnl
 
-    def _calculate_metrics(
-        self, strategy_name: str, backtest_duration_ms: float
-    ) -> BacktestResult:
+    def _calculate_metrics(self, strategy_name: str, backtest_duration_ms: float) -> BacktestResult:
         """Calculate performance metrics"""
         if not self.trades:
             return BacktestResult(
@@ -246,9 +232,7 @@ class StrategyTester:
         returns = [t["pnl"] / self.initial_balance for t in self.trades]
         avg_return = sum(returns) / len(returns) if returns else 0.0
         std_return = (
-            (sum((r - avg_return) ** 2 for r in returns) / len(returns)) ** 0.5
-            if returns
-            else 0.0
+            (sum((r - avg_return) ** 2 for r in returns) / len(returns)) ** 0.5 if returns else 0.0
         )
         sharpe_ratio = avg_return / std_return if std_return > 0 else 0.0
 
@@ -264,9 +248,7 @@ class StrategyTester:
 
         # Average trade duration
         avg_trade_duration_ms = (
-            sum(t["duration_ms"] for t in self.trades) / total_trades
-            if total_trades > 0
-            else 0.0
+            sum(t["duration_ms"] for t in self.trades) / total_trades if total_trades > 0 else 0.0
         )
 
         return BacktestResult(

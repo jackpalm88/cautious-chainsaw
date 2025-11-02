@@ -22,6 +22,7 @@ from validator import INoTValidator
 @dataclass
 class GoldenScenario:
     """Test scenario with expected output"""
+
     id: str
     name: str
     description: str
@@ -80,7 +81,7 @@ class GoldenTestHarness:
         context: dict,
         memory_summary: str,
         orchestrator: INoTOrchestrator,
-        description: str = ""
+        description: str = "",
     ) -> GoldenScenario:
         """
         Create new golden scenario by running current implementation.
@@ -89,8 +90,7 @@ class GoldenTestHarness:
         """
         # Execute INoT
         decision = orchestrator.reason(
-            self._dict_to_context(context),
-            self._string_to_memory(memory_summary)
+            self._dict_to_context(context), self._string_to_memory(memory_summary)
         )
 
         # Create golden scenario
@@ -101,15 +101,12 @@ class GoldenTestHarness:
             context=context,
             memory_summary=memory_summary,
             expected_action=decision.action,
-            expected_confidence_range=(
-                decision.confidence - 0.05,
-                decision.confidence + 0.05
-            ),
+            expected_confidence_range=(decision.confidence - 0.05, decision.confidence + 0.05),
             expected_vetoed=decision.vetoed,
             golden_agent_outputs=decision.agent_outputs,
             model_version=orchestrator.model_version,
             created_at=datetime.now().isoformat(),
-            last_validated=datetime.now().isoformat()
+            last_validated=datetime.now().isoformat(),
         )
 
         # Save to disk
@@ -122,10 +119,7 @@ class GoldenTestHarness:
         return golden
 
     def test_scenario(
-        self,
-        scenario: GoldenScenario,
-        orchestrator: INoTOrchestrator,
-        strict: bool = False
+        self, scenario: GoldenScenario, orchestrator: INoTOrchestrator, strict: bool = False
     ) -> 'TestResult':
         """
         Test current implementation against golden scenario.
@@ -141,16 +135,16 @@ class GoldenTestHarness:
         """
         # Execute INoT with same inputs
         decision = orchestrator.reason(
-            self._dict_to_context(scenario.context),
-            self._string_to_memory(scenario.memory_summary)
+            self._dict_to_context(scenario.context), self._string_to_memory(scenario.memory_summary)
         )
 
         # Check basic outputs
         action_match = decision.action == scenario.expected_action
 
         conf_in_range = (
-            scenario.expected_confidence_range[0] <= decision.confidence <=
-            scenario.expected_confidence_range[1]
+            scenario.expected_confidence_range[0]
+            <= decision.confidence
+            <= scenario.expected_confidence_range[1]
         )
 
         veto_match = decision.vetoed == scenario.expected_vetoed
@@ -162,7 +156,7 @@ class GoldenTestHarness:
         if strict:
             current_hash = self._hash_agent_outputs(decision.agent_outputs)
             golden_hash = self._hash_agent_outputs(scenario.golden_agent_outputs)
-            exact_match = (current_hash == golden_hash)
+            exact_match = current_hash == golden_hash
 
         result = TestResult(
             scenario_id=scenario.id,
@@ -172,15 +166,13 @@ class GoldenTestHarness:
             veto_match=veto_match,
             exact_match=exact_match if strict else None,
             current_output=decision,
-            golden_output=scenario
+            golden_output=scenario,
         )
 
         return result
 
     def run_all_tests(
-        self,
-        orchestrator: INoTOrchestrator,
-        strict: bool = False
+        self, orchestrator: INoTOrchestrator, strict: bool = False
     ) -> list['TestResult']:
         """Run all golden tests and return results"""
         results = []
@@ -193,6 +185,7 @@ class GoldenTestHarness:
 
     def _dict_to_context(self, context_dict: dict):
         """Convert dict to FusedContext object"""
+
         class MockContext:
             def __init__(self, d):
                 for k, v in d.items():
@@ -202,6 +195,7 @@ class GoldenTestHarness:
 
     def _string_to_memory(self, summary: str):
         """Convert string to MemorySnapshot"""
+
         class MockMemory:
             def __init__(self, summary):
                 self.summary = summary
@@ -228,6 +222,7 @@ class GoldenTestHarness:
 @dataclass
 class TestResult:
     """Result of golden test execution"""
+
     scenario_id: str
     passed: bool
 
@@ -249,8 +244,7 @@ class TestResult:
             failures = []
             if not self.action_match:
                 failures.append(
-                    f"action ({self.current_output.action} != "
-                    f"{self.golden_output.expected_action})"
+                    f"action ({self.current_output.action} != {self.golden_output.expected_action})"
                 )
             if not self.confidence_in_range:
                 failures.append(
@@ -259,8 +253,7 @@ class TestResult:
                 )
             if not self.veto_match:
                 failures.append(
-                    f"veto ({self.current_output.vetoed} != "
-                    f"{self.golden_output.expected_vetoed})"
+                    f"veto ({self.current_output.vetoed} != {self.golden_output.expected_vetoed})"
                 )
             if self.exact_match is not None and not self.exact_match:
                 failures.append("exact output mismatch")
@@ -295,15 +288,13 @@ def inot_orchestrator():
                   {"agent": "Synthesis", "final_decision": {"action": "BUY", "lots": 0.1, "stop_loss": 1.08, "confidence": 0.72}, "reasoning_synthesis": "Consensus buy with risk management", "agent_weights_applied": {"Signal": 0.7, "Risk": 0.8, "Context": 1.0}, "memory_update_intent": "RSI oversold in ranging regime"}
                 ]"""
                 usage = {"input_tokens": 3000, "output_tokens": 800}
+
             return Response()
 
     return INoTOrchestrator(
         llm_client=DeterministicLLM(),
-        config={
-            "model_version": "claude-sonnet-4-test",
-            "temperature": 0.0
-        },
-        validator=validator
+        config={"model_version": "claude-sonnet-4-test", "temperature": 0.0},
+        validator=validator,
     )
 
 
@@ -335,12 +326,11 @@ if __name__ == "__main__":
                   {"agent": "Synthesis", "final_decision": {"action": "BUY", "lots": 0.1, "stop_loss": 1.08, "confidence": 0.72}, "reasoning_synthesis": "Buy", "agent_weights_applied": {"Signal": 0.75, "Risk": 0.8, "Context": 1.0}, "memory_update_intent": "RSI oversold"}
                 ]"""
                 usage = {"input_tokens": 3000, "output_tokens": 800}
+
             return Response()
 
     orchestrator = INoTOrchestrator(
-        llm_client=MockLLM(),
-        config={"temperature": 0.0},
-        validator=validator
+        llm_client=MockLLM(), config={"temperature": 0.0}, validator=validator
     )
 
     harness = GoldenTestHarness(Path("tests/golden"))
@@ -357,11 +347,11 @@ if __name__ == "__main__":
             "atr": 0.0015,
             "sentiment": -0.2,
             "current_position": None,
-            "timestamp": "2024-10-30T10:00:00Z"
+            "timestamp": "2024-10-30T10:00:00Z",
         },
         memory_summary="Recent: 70% win rate in ranging markets. RSI<30 setups won 8/10 times.",
         orchestrator=orchestrator,
-        description="Test mean-reversion signal in confirmed ranging regime"
+        description="Test mean-reversion signal in confirmed ranging regime",
     )
 
     print(f"✅ Created golden scenario: {scenario1.id}")

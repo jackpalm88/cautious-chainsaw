@@ -3,7 +3,6 @@ Event Impact Scorer - Calculate economic event impact scores
 Based on historical volatility, surprise potential, and market conditions
 """
 
-
 from .event_normalizer import NormalizedEvent
 
 
@@ -140,9 +139,7 @@ class EventImpactScorer:
         market_score = min(1.0, current_volatility)
 
         # Weighted combination
-        final_score = (
-            historical_score * 0.5 + surprise_score * 0.3 + market_score * 0.2
-        )
+        final_score = historical_score * 0.5 + surprise_score * 0.3 + market_score * 0.2
 
         return min(1.0, max(0.0, final_score))
 
@@ -152,9 +149,7 @@ class EventImpactScorer:
         event_type = self._classify_event_type(event)
 
         # Get historical data
-        historical_data = self.impact_database.get(
-            event_type, {"avg_move": 20, "max_move": 60}
-        )
+        historical_data = self.impact_database.get(event_type, {"avg_move": 20, "max_move": 60})
 
         # Normalize to 0.0-1.0 scale (300 pips = max impact)
         avg_move = historical_data["avg_move"]
@@ -182,9 +177,7 @@ class EventImpactScorer:
                 if forecast_val is not None and previous_val is not None:
                     # Calculate relative change
                     if previous_val != 0:
-                        change_pct = abs(
-                            (forecast_val - previous_val) / previous_val
-                        )
+                        change_pct = abs((forecast_val - previous_val) / previous_val)
                         # Normalize to 0.0-1.0 (10% change = max surprise)
                         surprise = min(1.0, change_pct / 0.10)
                         return surprise
@@ -269,8 +262,7 @@ class EventImpactScorer:
             List of (event, score) tuples sorted by score descending
         """
         scored = [
-            (event, self.calculate_impact_score(event, current_volatility))
-            for event in events
+            (event, self.calculate_impact_score(event, current_volatility)) for event in events
         ]
 
         # Sort by score descending
@@ -292,8 +284,4 @@ class EventImpactScorer:
             List of high impact events
         """
         scored = self.score_multiple_events(events, current_volatility)
-        return [
-            event
-            for event, score in scored
-            if score >= self.impact_thresholds["HIGH"]
-        ]
+        return [event for event, score in scored if score >= self.impact_thresholds["HIGH"]]

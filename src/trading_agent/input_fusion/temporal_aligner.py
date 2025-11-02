@@ -48,9 +48,7 @@ class TemporalAligner:
             self.buffers[stream_id].pop(0)
             self.dropped_count += 1
 
-    def get_aligned_events(
-        self, reference_time: datetime | None = None
-    ) -> dict[str, StreamEvent]:
+    def get_aligned_events(self, reference_time: datetime | None = None) -> dict[str, StreamEvent]:
         """
         Get aligned events within sync window
 

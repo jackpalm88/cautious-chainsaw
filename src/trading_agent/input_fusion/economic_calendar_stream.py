@@ -316,26 +316,18 @@ class EconomicCalendarStream(DataStream):
         threshold = now + timedelta(hours=hours_ahead)
 
         events = [
-            event
-            for event in self.scheduled_events
-            if now <= event.scheduled_time <= threshold
+            event for event in self.scheduled_events if now <= event.scheduled_time <= threshold
         ]
 
         # Filter by impact if specified
         if min_impact:
             impact_order = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
             min_level = impact_order.get(min_impact, 0)
-            events = [
-                event
-                for event in events
-                if impact_order.get(event.impact, 0) >= min_level
-            ]
+            events = [event for event in events if impact_order.get(event.impact, 0) >= min_level]
 
         return sorted(events, key=lambda x: x.scheduled_time)
 
-    def get_events_by_currency(
-        self, currency: str, hours_ahead: int = 24
-    ) -> list[NormalizedEvent]:
+    def get_events_by_currency(self, currency: str, hours_ahead: int = 24) -> list[NormalizedEvent]:
         """
         Get upcoming events for specific currency
 

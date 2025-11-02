@@ -17,6 +17,7 @@ from jsonschema import ValidationError
 @dataclass
 class ValidationResult:
     """Result of validation attempt"""
+
     valid: bool
     agents: list[dict] | None = None
     errors: list[str] | None = None
@@ -60,10 +61,7 @@ class INoTValidator:
 
         # Attempt 2-3: Auto-remediation
         for attempt in range(self.max_remediation_attempts):
-            corrected_output = self._auto_remediate(
-                llm_output,
-                result.errors
-            )
+            corrected_output = self._auto_remediate(llm_output, result.errors)
 
             result = self._try_parse_and_validate(corrected_output)
             result.remediation_applied = True
@@ -73,10 +71,7 @@ class INoTValidator:
                 return result
 
         # All attempts failed
-        return ValidationResult(
-            valid=False,
-            errors=result.errors + ["Auto-remediation exhausted"]
-        )
+        return ValidationResult(valid=False, errors=result.errors + ["Auto-remediation exhausted"])
 
     def _try_parse_and_validate(self, output: str) -> ValidationResult:
         """Single validation attempt"""
@@ -85,28 +80,18 @@ class INoTValidator:
         try:
             agents = self._parse_json(output)
         except json.JSONDecodeError as e:
-            return ValidationResult(
-                valid=False,
-                errors=[f"JSON parse error: {e}"]
-            )
+            return ValidationResult(valid=False, errors=[f"JSON parse error: {e}"])
 
         # Step 2: Schema validation
         try:
             jsonschema.validate(instance=agents, schema=self.schema)
         except ValidationError as e:
-            return ValidationResult(
-                valid=False,
-                errors=[f"Schema validation error: {e.message}"]
-            )
+            return ValidationResult(valid=False, errors=[f"Schema validation error: {e.message}"])
 
         # Step 3: Business rules
         business_errors = self._validate_business_rules(agents)
         if business_errors:
-            return ValidationResult(
-                valid=False,
-                agents=agents,
-                errors=business_errors
-            )
+            return ValidationResult(valid=False, agents=agents, errors=business_errors)
 
         # All checks passed
         return ValidationResult(valid=True, agents=agents)
@@ -131,9 +116,7 @@ class INoTValidator:
         agents = json.loads(output)
 
         if not isinstance(agents, list):
-            raise json.JSONDecodeError(
-                "Expected JSON array", output, 0
-            )
+            raise json.JSONDecodeError("Expected JSON array", output, 0)
 
         return agents
 
@@ -158,43 +141,30 @@ class INoTValidator:
         actual_agents = [a.get("agent") for a in agents]
 
         if actual_agents != expected_agents:
-            errors.append(
-                f"Agent order incorrect. Expected {expected_agents}, "
-                f"got {actual_agents}"
-            )
+            errors.append(f"Agent order incorrect. Expected {expected_agents}, got {actual_agents}")
 
         # Risk veto logic
         risk_agent = agents[1]  # Risk is second
         if not risk_agent.get("approved", True):
             if not risk_agent.get("veto_reason"):
-                errors.append(
-                    "Risk.approved=false but no veto_reason provided"
-                )
+                errors.append("Risk.approved=false but no veto_reason provided")
 
         # Stop-loss requirement
         synthesis_agent = agents[3]  # Synthesis is fourth
         if risk_agent.get("stop_loss_required", False):
             final_decision = synthesis_agent.get("final_decision", {})
             if not final_decision.get("stop_loss"):
-                errors.append(
-                    "Risk requires stop-loss but Synthesis didn't provide one"
-                )
+                errors.append("Risk requires stop-loss but Synthesis didn't provide one")
 
         # Confidence bounds check (paranoid validation)
         for agent in agents:
             conf = agent.get("confidence")
             if conf is not None and (conf < 0 or conf > 1):
-                errors.append(
-                    f"{agent.get('agent')}: confidence {conf} outside [0,1]"
-                )
+                errors.append(f"{agent.get('agent')}: confidence {conf} outside [0,1]")
 
         return errors
 
-    def _auto_remediate(
-        self,
-        original_output: str,
-        errors: list[str]
-    ) -> str:
+    def _auto_remediate(self, original_output: str, errors: list[str]) -> str:
         """
         Attempt automatic correction of common errors.
 
@@ -235,23 +205,18 @@ class INoTValidator:
         defaults = {
             "Signal": {
                 "key_factors": ["technical_analysis"],
-                "reasoning": "Technical signal identified"
+                "reasoning": "Technical signal identified",
             },
             "Risk": {
                 "reasoning": "Risk assessment completed",
                 "position_size_adjustment": 1.0,
-                "stop_loss_required": True
+                "stop_loss_required": True,
             },
-            "Context": {
-                "reasoning": "Market context evaluated",
-                "weight_adjustment": 1.0
-            },
+            "Context": {"reasoning": "Market context evaluated", "weight_adjustment": 1.0},
             "Synthesis": {
                 "reasoning_synthesis": "Decision synthesized from agent inputs",
-                "agent_weights_applied": {
-                    "Signal": 1.0, "Risk": 1.0, "Context": 1.0
-                }
-            }
+                "agent_weights_applied": {"Signal": 1.0, "Risk": 1.0, "Context": 1.0},
+            },
         }
 
         for agent in ordered_agents:
@@ -291,7 +256,7 @@ def create_remediation_prompt(errors: list[str], output: str) -> str:
     """Generate prompt for LLM to self-correct"""
     return AUTO_REMEDIATION_PROMPT.format(
         errors="\n".join(f"- {e}" for e in errors),
-        output_preview=output[:500] + "..." if len(output) > 500 else output
+        output_preview=output[:500] + "..." if len(output) > 500 else output,
     )
 
 

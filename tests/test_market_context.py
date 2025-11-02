@@ -157,4 +157,6 @@ class TestMarketContext:
         result_low = tool.execute(prices=low_prices)
 
         # Normalized volatility should be lower for high prices
-        assert result_high.value["volatility_normalized"] < result_low.value["volatility_normalized"]
+        assert (
+            result_high.value["volatility_normalized"] < result_low.value["volatility_normalized"]
+        )

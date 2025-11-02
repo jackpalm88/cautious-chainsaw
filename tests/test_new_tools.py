@@ -95,7 +95,7 @@ class TestRiskFixedFractional:
             balance=10000,
             risk_pct=0.01,  # 1%
             stop_loss_pips=20,
-            symbol="EURUSD"
+            symbol="EURUSD",
         )
 
         assert result.value is not None
@@ -108,12 +108,7 @@ class TestRiskFixedFractional:
         """Test risk calculation for JPY pair"""
         risk = RiskFixedFractional()
 
-        result = risk.execute(
-            balance=10000,
-            risk_pct=0.01,
-            stop_loss_pips=20,
-            symbol="USDJPY"
-        )
+        result = risk.execute(balance=10000, risk_pct=0.01, stop_loss_pips=20, symbol="USDJPY")
 
         assert result.value is not None
         assert result.value['position_size'] > 0
@@ -123,12 +118,7 @@ class TestRiskFixedFractional:
         risk = RiskFixedFractional()
 
         # Negative balance
-        result = risk.execute(
-            balance=-1000,
-            risk_pct=0.01,
-            stop_loss_pips=20,
-            symbol="EURUSD"
-        )
+        result = risk.execute(balance=-1000, risk_pct=0.01, stop_loss_pips=20, symbol="EURUSD")
         assert result.error is not None
 
         # Excessive risk
@@ -136,7 +126,7 @@ class TestRiskFixedFractional:
             balance=10000,
             risk_pct=0.5,  # 50% - too high
             stop_loss_pips=20,
-            symbol="EURUSD"
+            symbol="EURUSD",
         )
         assert result.error is not None
 
@@ -144,12 +134,7 @@ class TestRiskFixedFractional:
         """Test risk calculation latency"""
         risk = RiskFixedFractional()
 
-        result = risk.execute(
-            balance=10000,
-            risk_pct=0.01,
-            stop_loss_pips=20,
-            symbol="EURUSD"
-        )
+        result = risk.execute(balance=10000, risk_pct=0.01, stop_loss_pips=20, symbol="EURUSD")
 
         assert result.latency_ms < 5.0  # Should be under 5ms
 
@@ -248,12 +233,7 @@ class TestIntegration:
         # 2. Risk calculation
         risk = RiskFixedFractional()
 
-        position = risk.execute(
-            balance=10000,
-            risk_pct=0.01,
-            stop_loss_pips=20,
-            symbol="EURUSD"
-        )
+        position = risk.execute(balance=10000, risk_pct=0.01, stop_loss_pips=20, symbol="EURUSD")
 
         assert position.value is not None
         assert position.value['position_size'] > 0

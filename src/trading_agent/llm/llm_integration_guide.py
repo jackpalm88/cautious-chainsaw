@@ -36,6 +36,7 @@ class LLMIntegrationConfig:
     log_requests: bool = True
     log_responses: bool = True
 
+
 class LLMIntegrationManager:
     """Manages the transition from Mock to Real LLM"""
 
@@ -48,7 +49,7 @@ class LLMIntegrationManager:
                 api_key=config.anthropic_api_key,
                 model=config.model,
                 max_tokens=config.max_tokens,
-                temperature=config.temperature
+                temperature=config.temperature,
             )
         else:
             self.real_client = None
@@ -100,22 +101,19 @@ class LLMIntegrationManager:
                     "latency_ms": response.latency_ms,
                     "tokens_used": response.tokens_used,
                     "response_length": len(response.content),
-                    "confidence": response.confidence
+                    "confidence": response.confidence,
                 }
             else:
                 # Mock client test
                 return {
                     "status": "success",
                     "client_type": "mock",
-                    "note": "Using fallback mock client"
+                    "note": "Using fallback mock client",
                 }
 
         except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e),
-                "client_type": "unknown"
-            }
+            return {"status": "error", "error": str(e), "client_type": "unknown"}
+
 
 # Step-by-step integration instructions
 INTEGRATION_STEPS = """
@@ -200,24 +198,19 @@ CONFIG_TEMPLATES = {
         "fallback_to_mock": True,
         "max_tokens": 2000,
         "temperature": 0.1,
-        "log_requests": True
+        "log_requests": True,
     },
-
     "production": {
         "anthropic_api_key": "your_prod_key",
         "enable_real_llm": True,
         "fallback_to_mock": False,
         "max_tokens": 4000,
         "temperature": 0.0,
-        "log_requests": False
+        "log_requests": False,
     },
-
-    "testing": {
-        "enable_real_llm": False,
-        "fallback_to_mock": True,
-        "log_requests": True
-    }
+    "testing": {"enable_real_llm": False, "fallback_to_mock": True, "log_requests": True},
 }
+
 
 def create_config_file(environment: str = "development"):
     """Create configuration file for the integration"""
@@ -235,6 +228,7 @@ def create_config_file(environment: str = "development"):
     print(f"✅ Created {config_path}")
     return config_path
 
+
 def validate_integration_requirements():
     """Validate that all requirements are met for integration"""
 
@@ -249,6 +243,7 @@ def validate_integration_requirements():
     # Check Anthropic package
     try:
         import anthropic  # noqa: F401
+
         print("✅ Anthropic package installed")
     except ImportError:
         issues.append("❌ Anthropic package not installed (pip install anthropic)")
@@ -256,6 +251,7 @@ def validate_integration_requirements():
     # Check network connectivity
     try:
         import requests
+
         requests.get("https://api.anthropic.com", timeout=5)
         print("✅ Network connectivity to Anthropic API")
     except Exception:
@@ -269,6 +265,7 @@ def validate_integration_requirements():
     else:
         print("\n🎯 All requirements met - ready for integration!")
         return True
+
 
 # Example usage
 if __name__ == "__main__":
@@ -286,8 +283,7 @@ if __name__ == "__main__":
         print("\n3. Testing integration...")
         if os.getenv("ANTHROPIC_API_KEY"):
             config = LLMIntegrationConfig(
-                anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
-                enable_real_llm=True
+                anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"), enable_real_llm=True
             )
 
             manager = LLMIntegrationManager(config)

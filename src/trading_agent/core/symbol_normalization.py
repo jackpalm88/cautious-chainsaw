@@ -16,11 +16,9 @@ from typing import Any, Protocol, runtime_checkable
 
 @runtime_checkable
 class BinanceAdapterProtocol(Protocol):
-    def get_current_price(self, symbol: str) -> float:
-        ...
+    def get_current_price(self, symbol: str) -> float: ...
 
-    def get_symbol_info(self, symbol: str) -> dict:
-        ...
+    def get_symbol_info(self, symbol: str) -> dict: ...
 
 
 @dataclass(frozen=True)

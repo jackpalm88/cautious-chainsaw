@@ -12,6 +12,7 @@ from typing import Any
 
 class ToolTier(Enum):
     """Tool classification by complexity"""
+
     ATOMIC = "atomic"  # Single-purpose, deterministic functions
     COMPOSITE = "composite"  # Multi-tool aggregation
     EXECUTION = "execution"  # External system interaction
@@ -29,6 +30,7 @@ class ToolResult:
         metadata: Optional additional information
         error: Optional error message if execution failed
     """
+
     value: Any
     confidence: float
     latency_ms: float
@@ -126,6 +128,7 @@ class ConfidenceComponents:
 
     Based on Tool Stack Action Plan specification.
     """
+
     sample_sufficiency: float  # 0.0-1.0
     volatility_regime: float  # 0.0-1.0 (low=0.7, medium=1.0, high=0.9)
     indicator_agreement: float  # 0.0-1.0
@@ -155,14 +158,14 @@ class ConfidenceComponents:
             Confidence score (0.0-1.0)
         """
         confidence = (
-            self.sample_sufficiency ** 0.25 *
-            self.volatility_regime ** 0.15 *
-            self.indicator_agreement ** 0.20 *
-            self.data_quality ** 0.10 *
-            self.liquidity_regime ** 0.12 *
-            self.session_factor ** 0.08 *
-            self.news_proximity ** 0.07 *
-            self.spread_anomaly ** 0.03
+            self.sample_sufficiency**0.25
+            * self.volatility_regime**0.15
+            * self.indicator_agreement**0.20
+            * self.data_quality**0.10
+            * self.liquidity_regime**0.12
+            * self.session_factor**0.08
+            * self.news_proximity**0.07
+            * self.spread_anomaly**0.03
         )
 
         # Clamp to [0.0, 1.0]
@@ -222,7 +225,9 @@ class ConfidenceCalculator:
             return ratio * 0.875  # 0.8 → 0.7
 
     @staticmethod
-    def volatility_regime(volatility: float, low_threshold: float = 0.5, high_threshold: float = 2.0) -> float:
+    def volatility_regime(
+        volatility: float, low_threshold: float = 0.5, high_threshold: float = 2.0
+    ) -> float:
         """
         Classify volatility regime and return confidence factor.
 

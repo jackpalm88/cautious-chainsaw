@@ -142,11 +142,13 @@ class TestStrategyRegistry:
 
         # Cleanup - close all connections first (Windows file locking)
         import gc
+
         del registry
         gc.collect()  # Force garbage collection to close connections
 
         # Wait a bit for Windows to release the file
         import time
+
         time.sleep(0.1)
 
         Path(db_path).unlink(missing_ok=True)
@@ -292,10 +294,12 @@ class TestStrategySelector:
 
         # Cleanup - close all connections first (Windows file locking)
         import gc
+
         del registry
         gc.collect()
 
         import time
+
         time.sleep(0.1)
 
         Path(db_path).unlink(missing_ok=True)
@@ -387,9 +391,7 @@ class TestStrategySelector:
             regime="ranging",
         )
 
-        ensemble = selector.select_ensemble(
-            context, strategies, top_n=2, metric="sharpe_ratio"
-        )
+        ensemble = selector.select_ensemble(context, strategies, top_n=2, metric="sharpe_ratio")
 
         assert len(ensemble) <= 2
         if ensemble:

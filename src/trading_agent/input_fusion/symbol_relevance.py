@@ -45,9 +45,7 @@ class SymbolRelevanceScorer:
             "us_stocks": {"start": time(13, 30), "end": time(20, 0)},  # 9:30-16:00 ET
         }
 
-    def calculate_relevance(
-        self, news_item: Any, symbol: str, market_type: str = "forex"
-    ) -> float:
+    def calculate_relevance(self, news_item: Any, symbol: str, market_type: str = "forex") -> float:
         """
         Calculate relevance score for news item and symbol
 

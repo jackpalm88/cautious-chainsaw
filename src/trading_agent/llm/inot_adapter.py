@@ -28,6 +28,7 @@ class SimpleResponse:
     - .content attribute (raw text response, typically JSON)
     - .usage attribute (dict with token counts)
     """
+
     content: str
 
     # Optional metadata (not used by INoT but useful for debugging)
@@ -81,7 +82,7 @@ class INoTLLMAdapter:
         prompt: str,
         model: str | None = None,
         temperature: float | None = None,
-        max_tokens: int | None = None
+        max_tokens: int | None = None,
     ) -> SimpleResponse:
         """
         Execute LLM completion with INoT-compatible interface.
@@ -116,7 +117,7 @@ class INoTLLMAdapter:
             response: LLMResponse = self.client.complete(
                 prompt=prompt,
                 tools=None,  # INoT doesn't use tool calling
-                system_prompt=None  # INoT includes system instructions in prompt
+                system_prompt=None,  # INoT includes system instructions in prompt
             )
 
             # Adapt response to SimpleResponse format
@@ -127,23 +128,20 @@ class INoTLLMAdapter:
                 if 'usage' in raw:
                     usage_dict = {
                         'input_tokens': raw['usage'].get('input_tokens', 0),
-                        'output_tokens': raw['usage'].get('output_tokens', 0)
+                        'output_tokens': raw['usage'].get('output_tokens', 0),
                     }
 
             # Fallback: estimate from total tokens (50/50 split)
             if not usage_dict:
                 half_tokens = response.tokens_used // 2
-                usage_dict = {
-                    'input_tokens': half_tokens,
-                    'output_tokens': half_tokens
-                }
+                usage_dict = {'input_tokens': half_tokens, 'output_tokens': half_tokens}
 
             return SimpleResponse(
                 content=response.content,
                 latency_ms=response.latency_ms,
                 tokens_used=response.tokens_used,
                 model_used=response.model_used,
-                usage=usage_dict
+                usage=usage_dict,
             )
 
         finally:
@@ -187,7 +185,7 @@ def create_inot_adapter(
     api_key: str | None = None,
     model: str = "claude-sonnet-4-20250514",
     max_tokens: int = 4000,
-    temperature: float = 0.0
+    temperature: float = 0.0,
 ) -> INoTLLMAdapter:
     """
     Create INoT adapter with default AnthropicLLMClient configuration.
@@ -213,9 +211,6 @@ def create_inot_adapter(
         )
     """
     client = AnthropicLLMClient(
-        api_key=api_key,
-        model=model,
-        max_tokens=max_tokens,
-        temperature=temperature
+        api_key=api_key, model=model, max_tokens=max_tokens, temperature=temperature
     )
     return INoTLLMAdapter(client)

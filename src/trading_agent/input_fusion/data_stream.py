@@ -40,9 +40,7 @@ class DataStream(ABC):
         self.stream_id = stream_id
         self.buffer_size = buffer_size
         self.status = StreamStatus.IDLE
-        self.event_queue: asyncio.Queue[StreamEvent] = asyncio.Queue(
-            maxsize=buffer_size
-        )
+        self.event_queue: asyncio.Queue[StreamEvent] = asyncio.Queue(maxsize=buffer_size)
         self.error_count = 0
         self.event_count = 0
         self._task: asyncio.Task | None = None

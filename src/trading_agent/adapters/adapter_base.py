@@ -47,6 +47,7 @@ class ErrorCode(Enum):
 @dataclass
 class SymbolInfo:
     """Symbol information from execution provider"""
+
     symbol: str
     digits: int  # Decimal places
     point: float  # Minimum price change
@@ -64,6 +65,7 @@ class SymbolInfo:
 @dataclass
 class OrderRequest:
     """Unified order request structure"""
+
     symbol: str
     direction: str  # 'LONG' or 'SHORT'
     size: float  # Position size in lots
@@ -77,6 +79,7 @@ class OrderRequest:
 @dataclass
 class OrderResult:
     """Result of order execution"""
+
     success: bool
     order_id: int | None = None
     fill_price: float | None = None
@@ -93,6 +96,7 @@ class OrderResult:
 @dataclass
 class AccountInfo:
     """Account information from execution provider"""
+
     account_id: str
     balance: float
     equity: float
@@ -105,6 +109,7 @@ class AccountInfo:
 @dataclass
 class PositionInfo:
     """Open position information"""
+
     ticket: int
     symbol: str
     direction: str  # 'LONG' or 'SHORT'

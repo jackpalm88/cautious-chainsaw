@@ -63,7 +63,7 @@ class PerformanceCalculator:
         self,
         trades: list[BacktestTrade],
         equity_curve: list[dict[str, Any]],
-        initial_capital: float
+        initial_capital: float,
     ) -> PerformanceMetrics:
         """
         Calculate all performance metrics.
@@ -156,7 +156,7 @@ class PerformanceCalculator:
             loss_streak_max=loss_streak,
             monthly_win_rate=monthly_win_rate * 100,
             total_fees=total_fees,
-            trades_per_day=trades_per_day
+            trades_per_day=trades_per_day,
         )
 
     def _calculate_sharpe(self, returns: pd.Series, std: float) -> float:
@@ -165,7 +165,7 @@ class PerformanceCalculator:
             return 0
 
         # Annualize
-        daily_rf = (1 + self.risk_free_rate) ** (1/252) - 1
+        daily_rf = (1 + self.risk_free_rate) ** (1 / 252) - 1
         excess_return = returns.mean() - daily_rf
 
         sharpe = (excess_return / std) * np.sqrt(252) if std > 0 else 0
@@ -181,16 +181,14 @@ class PerformanceCalculator:
         if downside_std == 0:
             return 0
 
-        daily_rf = (1 + self.risk_free_rate) ** (1/252) - 1
+        daily_rf = (1 + self.risk_free_rate) ** (1 / 252) - 1
         excess_return = returns.mean() - daily_rf
 
         sortino = (excess_return / downside_std) * np.sqrt(252)
         return sortino
 
     def _calculate_drawdown(
-        self,
-        equity_series: pd.Series,
-        timestamps: pd.Series
+        self, equity_series: pd.Series, timestamps: pd.Series
     ) -> tuple[float, int]:
         """Calculate maximum drawdown and duration."""
         running_max = equity_series.expanding().max()
@@ -252,9 +250,9 @@ class PerformanceCalculator:
 
     def print_report(self, metrics: PerformanceMetrics) -> None:
         """Print formatted performance report."""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("📊 BACKTEST PERFORMANCE REPORT")
-        print("="*60)
+        print("=" * 60)
 
         print("\n🎯 RETURN METRICS")
         print(f"  Total Return:        {metrics.total_return_pct:>8.2f}%")
@@ -289,13 +287,13 @@ class PerformanceCalculator:
         print(f"  Total Fees:          ${metrics.total_fees:>8.2f}")
         print(f"  Trades/Day:          {metrics.trades_per_day:>8.2f}")
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
 
         # Performance rating
         score = self._calculate_score(metrics)
         rating = self._get_rating(score)
         print(f"🏆 OVERALL RATING: {rating} (Score: {score:.1f}/100)")
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")
 
     def _calculate_score(self, m: PerformanceMetrics) -> float:
         """Calculate overall performance score (0-100)."""

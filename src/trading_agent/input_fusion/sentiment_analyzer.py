@@ -98,12 +98,8 @@ class SentimentAnalyzer:
         text = f"{news_item.title} {news_item.description}".lower()
 
         # Count positive and negative keywords
-        positive_count = sum(
-            1 for keyword in self.positive_keywords if keyword in text
-        )
-        negative_count = sum(
-            1 for keyword in self.negative_keywords if keyword in text
-        )
+        positive_count = sum(1 for keyword in self.positive_keywords if keyword in text)
+        negative_count = sum(1 for keyword in self.negative_keywords if keyword in text)
 
         # Check for intensifiers
         has_intensifier = any(intensifier in text for intensifier in self.intensifiers)
@@ -144,9 +140,7 @@ class SentimentAnalyzer:
         # Would call OpenAI/Anthropic API with financial sentiment prompt
         return (0.0, 0.5)
 
-    def batch_analyze(
-        self, news_items: list[Any]
-    ) -> list[tuple[Any, float, float]]:
+    def batch_analyze(self, news_items: list[Any]) -> list[tuple[Any, float, float]]:
         """
         Analyze sentiment for multiple news items
 

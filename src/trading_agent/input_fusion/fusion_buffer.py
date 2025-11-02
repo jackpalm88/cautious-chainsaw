@@ -68,9 +68,7 @@ class FusionBuffer:
         # Return latest snapshots in reverse order (newest first)
         return list(reversed(list(self.buffer)[-count:]))
 
-    def get_range(
-        self, start_time: datetime, end_time: datetime
-    ) -> list[FusedSnapshot]:
+    def get_range(self, start_time: datetime, end_time: datetime) -> list[FusedSnapshot]:
         """
         Get snapshots within time range
 
@@ -81,11 +79,7 @@ class FusionBuffer:
         Returns:
             List of snapshots in time range
         """
-        return [
-            s
-            for s in self.buffer
-            if start_time <= s.timestamp <= end_time
-        ]
+        return [s for s in self.buffer if start_time <= s.timestamp <= end_time]
 
     def get_by_index(self, index: int) -> FusedSnapshot | None:
         """
