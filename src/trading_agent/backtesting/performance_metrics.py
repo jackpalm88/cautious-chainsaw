@@ -1,19 +1,10 @@
-"""
-Performance Metrics Calculator for Backtest Results
+"""Performance metrics utilities for backtest results."""
 
-Calculates:
-1. Return metrics (total return, CAGR, volatility)
-2. Risk-adjusted returns (Sharpe, Sortino, Calmar)
-3. Drawdown analysis (max DD, recovery time)
-4. Trade statistics (win rate, profit factor, expectancy)
-5. Benchmarking (vs buy-and-hold)
-"""
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
-from dataclasses import dataclass
 
 from .backtest_engine import BacktestTrade
 
@@ -70,8 +61,8 @@ class PerformanceCalculator:
 
     def calculate(
         self,
-        trades: List[BacktestTrade],
-        equity_curve: List[Dict[str, Any]],
+        trades: list[BacktestTrade],
+        equity_curve: list[dict[str, Any]],
         initial_capital: float
     ) -> PerformanceMetrics:
         """
@@ -224,7 +215,7 @@ class PerformanceCalculator:
 
         return max_dd, dd_duration_days
 
-    def _calculate_streaks(self, trades: List[BacktestTrade]) -> tuple[int, int]:
+    def _calculate_streaks(self, trades: list[BacktestTrade]) -> tuple[int, int]:
         """Calculate maximum winning/losing streaks."""
         win_streak = 0
         loss_streak = 0
@@ -243,7 +234,7 @@ class PerformanceCalculator:
 
         return win_streak, loss_streak
 
-    def _calculate_monthly_win_rate(self, trades: List[BacktestTrade]) -> float:
+    def _calculate_monthly_win_rate(self, trades: list[BacktestTrade]) -> float:
         """Calculate percentage of profitable months."""
         if not trades:
             return 0

@@ -1,9 +1,11 @@
 """Core event-driven backtesting engine for the trading agent."""
 
-from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any
+
 import numpy as np
 
 
@@ -28,7 +30,7 @@ class BacktestConfig:
     max_daily_loss: float = 0.05  # 5% daily loss limit
 
     # Performance tracking
-    benchmark: Optional[str] = None  # Compare to buy-and-hold
+    benchmark: str | None = None  # Compare to buy-and-hold
 
     # Execution realism
     use_realistic_fills: bool = True  # Simulate partial fills
@@ -56,8 +58,8 @@ class BacktestPosition:
     direction: str  # "buy" or "sell"
     entry_price: float
     size: float  # Lot size
-    stop_loss: Optional[float] = None
-    take_profit: Optional[float] = None
+    stop_loss: float | None = None
+    take_profit: float | None = None
     entry_time: datetime = field(default_factory=datetime.now)
     unrealized_pnl: float = 0.0
 
@@ -91,24 +93,24 @@ class BacktestEngine:
         results = engine.run()
     """
 
-    def __init__(self, config: Optional[BacktestConfig] = None):
+    def __init__(self, config: BacktestConfig | None = None):
         self.config = config or BacktestConfig()
 
         # Data storage
-        self.data: List[BacktestBar] = []
+        self.data: list[BacktestBar] = []
         self.current_bar_idx: int = 0
 
         # Portfolio state
         self.capital: float = self.config.initial_capital
-        self.positions: List[BacktestPosition] = []
-        self.closed_trades: List[BacktestTrade] = []
-        self.equity_curve: List[Dict[str, Any]] = []
+        self.positions: list[BacktestPosition] = []
+        self.closed_trades: list[BacktestTrade] = []
+        self.equity_curve: list[dict[str, Any]] = []
 
         # Strategy/tool functions
-        self.strategy_func: Optional[Callable] = None
+        self.strategy_func: Callable | None = None
 
         # Event handlers
-        self.event_handlers: Dict[EventType, List[Callable]] = {
+        self.event_handlers: dict[EventType, list[Callable]] = {
             EventType.MARKET: [],
             EventType.SIGNAL: [],
             EventType.ORDER: [],
@@ -116,10 +118,10 @@ class BacktestEngine:
         }
 
         # Performance tracking
-        self.start_time: Optional[datetime] = None
-        self.end_time: Optional[datetime] = None
+        self.start_time: datetime | None = None
+        self.end_time: datetime | None = None
 
-    def add_data(self, bars: List[BacktestBar]) -> None:
+    def add_data(self, bars: list[BacktestBar]) -> None:
         """Load historical data for backtesting."""
         self.data = sorted(bars, key=lambda x: x.timestamp)
         if not self.data:
@@ -130,20 +132,20 @@ class BacktestEngine:
         Add strategy function that will be called for each bar.
 
         Function signature:
-            def strategy(engine: BacktestEngine, bar: BacktestBar) -> Dict[str, Any]:
+            def strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
                 # Use engine.call_tool() to execute RSI, MACD, etc.
                 # Return trading signal: {"action": "buy", "sl": ..., "tp": ...}
         """
         self.strategy_func = strategy_func
 
-    def on_event(self, event_type, handler: Callable) -> None:
+    def on_event(self, event_type: EventType | str, handler: Callable) -> None:
         """Register event handler."""
         # Accept both EventType enum and string
         if isinstance(event_type, str):
             event_type = EventType(event_type)
         self.event_handlers[event_type].append(handler)
 
-    def call_tool(self, tool_name: str, **kwargs) -> Dict[str, Any]:
+    def call_tool(self, tool_name: str, **kwargs) -> dict[str, Any]:
         """
         Execute trading tool (RSI, MACD, etc.) with historical data.
 
@@ -171,7 +173,7 @@ class BacktestEngine:
 
         raise NotImplementedError(f"Tool {tool_name} not implemented in backtest")
 
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         """
         Execute backtest loop.
 
@@ -240,7 +242,7 @@ class BacktestEngine:
                     self._close_position(position, position.take_profit, bar, "tp")
                     continue
 
-    def _process_signal(self, bar: BacktestBar, signal: Dict[str, Any]) -> None:
+    def _process_signal(self, bar: BacktestBar, signal: dict[str, Any]) -> None:
         """Execute trade based on signal."""
         action = signal.get("action")
         size = signal.get("size", 0.01)  # Default 0.01 lots
@@ -336,7 +338,7 @@ class BacktestEngine:
             "open_positions": len(self.positions)
         })
 
-    def _generate_report(self) -> Dict[str, Any]:
+    def _generate_report(self) -> dict[str, Any]:
         """Generate comprehensive performance report."""
         if not self.closed_trades:
             return {
@@ -408,10 +410,10 @@ class BacktestEngine:
 
 # Helper function for quick backtests
 def quick_backtest(
-    data: List[BacktestBar],
+    data: list[BacktestBar],
     strategy_func: Callable,
-    config: Optional[BacktestConfig] = None
-) -> Dict[str, Any]:
+    config: BacktestConfig | None = None
+) -> dict[str, Any]:
     """
     Convenience function for running a backtest.
 

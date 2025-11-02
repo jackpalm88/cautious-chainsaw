@@ -1,22 +1,10 @@
-"""
-Historical Data Loader for MT5 Backtesting
+"""Utilities for loading and preparing historical data."""
 
-Supports:
-1. MT5 CSV export format
-2. Data cleaning and validation
-3. Spread estimation
-4. Multiple timeframe handling
-
-MT5 CSV format example:
-    Date,Time,Open,High,Low,Close,Volume
-    2024.01.01,00:00,1.0950,1.0955,1.0948,1.0953,125
-"""
-
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
-from typing import List, Optional, Dict, Any
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 from .backtest_engine import BacktestBar
 
@@ -47,7 +35,7 @@ class MT5DataLoader:
         timeframe: str,
         date_format: str = "%Y.%m.%d",
         time_format: str = "%H:%M"
-    ) -> List[BacktestBar]:
+    ) -> list[BacktestBar]:
         """
         Load MT5 CSV export file.
 
@@ -104,11 +92,11 @@ class MT5DataLoader:
 
     def clean_data(
         self,
-        bars: List[BacktestBar],
+        bars: list[BacktestBar],
         remove_gaps: bool = True,
         remove_outliers: bool = True,
         max_gap_hours: int = 24
-    ) -> List[BacktestBar]:
+    ) -> list[BacktestBar]:
         """
         Clean and validate historical data.
 
@@ -170,9 +158,9 @@ class MT5DataLoader:
 
     def resample_timeframe(
         self,
-        bars: List[BacktestBar],
+        bars: list[BacktestBar],
         target_timeframe: str
-    ) -> List[BacktestBar]:
+    ) -> list[BacktestBar]:
         """
         Resample bars to a different timeframe.
 
@@ -247,9 +235,9 @@ class MT5DataLoader:
 
     def split_train_test(
         self,
-        bars: List[BacktestBar],
+        bars: list[BacktestBar],
         train_ratio: float = 0.7
-    ) -> tuple[List[BacktestBar], List[BacktestBar]]:
+    ) -> tuple[list[BacktestBar], list[BacktestBar]]:
         """
         Split data into training and testing sets.
 
@@ -275,7 +263,7 @@ class MT5DataLoader:
         initial_price: float = 1.0950,
         volatility: float = 0.0002,
         trend: float = 0.00001
-    ) -> List[BacktestBar]:
+    ) -> list[BacktestBar]:
         """
         Generate realistic mock data using Geometric Brownian Motion.
 
@@ -295,7 +283,6 @@ class MT5DataLoader:
         np.random.seed(42)  # Reproducible
 
         # Generate price path using GBM
-        dt = 1.0  # Time step
         prices = [initial_price]
 
         for _ in range(num_bars - 1):
@@ -337,7 +324,7 @@ class MT5DataLoader:
 
     def export_to_csv(
         self,
-        bars: List[BacktestBar],
+        bars: list[BacktestBar],
         filepath: str
     ) -> None:
         """Export bars to CSV format."""
@@ -360,14 +347,14 @@ class MT5DataLoader:
 
 
 # Convenience functions
-def load_mt5_csv(filepath: str, symbol: str, timeframe: str) -> List[BacktestBar]:
+def load_mt5_csv(filepath: str, symbol: str, timeframe: str) -> list[BacktestBar]:
     """Quick load MT5 CSV file."""
     loader = MT5DataLoader()
     bars = loader.load_csv(filepath, symbol, timeframe)
     return loader.clean_data(bars)
 
 
-def generate_test_data(num_bars: int = 10000) -> List[BacktestBar]:
+def generate_test_data(num_bars: int = 10000) -> list[BacktestBar]:
     """Quick generate test data."""
     loader = MT5DataLoader()
     return loader.generate_mock_data(num_bars=num_bars)

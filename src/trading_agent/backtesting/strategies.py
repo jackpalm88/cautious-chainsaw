@@ -1,18 +1,11 @@
-"""
-Example Trading Strategies for Backtesting
+"""Example strategy implementations for the backtesting engine."""
 
-Demonstrates how to build strategies using trading tools:
-1. RSI Oversold/Overbought
-2. MACD Crossover
-3. Combined RSI + MACD
-4. Adaptive Risk Sizing
-"""
+from typing import Any
 
-from typing import Dict, Any, List
-from .backtest_engine import BacktestEngine, BacktestBar
+from .backtest_engine import BacktestBar, BacktestEngine
 
 
-def rsi_strategy(engine: BacktestEngine, bar: BacktestBar) -> Dict[str, Any]:
+def rsi_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
     """
     Simple RSI overbought/oversold strategy.
 
@@ -74,7 +67,7 @@ def rsi_strategy(engine: BacktestEngine, bar: BacktestBar) -> Dict[str, Any]:
     return signal
 
 
-def macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> Dict[str, Any]:
+def macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
     """
     MACD crossover strategy.
 
@@ -148,7 +141,7 @@ def macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> Dict[str, Any]:
     return signal
 
 
-def combined_rsi_macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> Dict[str, Any]:
+def combined_rsi_macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
     """
     Combined RSI + MACD confirmation strategy.
 
@@ -231,7 +224,7 @@ def combined_rsi_macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> Dict
     return signal
 
 
-def adaptive_risk_strategy(engine: BacktestEngine, bar: BacktestBar) -> Dict[str, Any]:
+def adaptive_risk_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
     """
     Adaptive risk sizing based on account equity and volatility.
 
