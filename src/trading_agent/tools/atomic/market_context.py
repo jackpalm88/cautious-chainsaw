@@ -44,7 +44,7 @@ class MarketContext(BaseTool):
 
         prices = kwargs["prices"]
 
-        if not isinstance(prices, (list, np.ndarray)):
+        if not isinstance(prices, list | np.ndarray):
             return False, "prices must be a list or numpy array"
 
         if len(prices) < max(self.atr_period, self.regime_lookback):
@@ -66,6 +66,7 @@ class MarketContext(BaseTool):
             ToolResult with market context data
         """
         import time
+
         start_time = time.perf_counter()
 
         prices = np.array(prices)
@@ -81,11 +82,7 @@ class MarketContext(BaseTool):
         trend_strength = self._calculate_trend_strength(prices)
 
         # Overall confidence
-        confidence = self._calculate_confidence(
-            regime_confidence,
-            len(prices),
-            atr_normalized
-        )
+        confidence = self._calculate_confidence(regime_confidence, len(prices), atr_normalized)
 
         # Calculate latency
         latency_ms = (time.perf_counter() - start_time) * 1000
@@ -103,7 +100,7 @@ class MarketContext(BaseTool):
                 "atr_period": self.atr_period,
                 "regime_lookback": self.regime_lookback,
                 "sample_size": len(prices),
-            }
+            },
         )
 
     def _calculate_atr(self, prices: np.ndarray) -> float:
@@ -116,7 +113,7 @@ class MarketContext(BaseTool):
         price_changes = np.abs(np.diff(prices))
 
         # Take last N periods
-        recent_changes = price_changes[-self.atr_period:]
+        recent_changes = price_changes[-self.atr_period :]
 
         # Average
         atr = np.mean(recent_changes)
@@ -136,7 +133,7 @@ class MarketContext(BaseTool):
             (regime, confidence)
         """
         # Use last N candles
-        recent_prices = prices[-self.regime_lookback:]
+        recent_prices = prices[-self.regime_lookback :]
 
         # Calculate metrics
         price_mean = recent_prices.mean()
@@ -175,7 +172,7 @@ class MarketContext(BaseTool):
 
         Uses linear regression R² as proxy.
         """
-        recent_prices = prices[-self.regime_lookback:]
+        recent_prices = prices[-self.regime_lookback :]
 
         # Linear regression
         x = np.arange(len(recent_prices))
@@ -195,10 +192,7 @@ class MarketContext(BaseTool):
         return max(0.0, min(1.0, r_squared))
 
     def _calculate_confidence(
-        self,
-        regime_confidence: float,
-        sample_size: int,
-        volatility_normalized: float
+        self, regime_confidence: float, sample_size: int, volatility_normalized: float
     ) -> float:
         """
         Calculate overall confidence in market context analysis.
@@ -215,11 +209,7 @@ class MarketContext(BaseTool):
         volatility_factor = max(0.5, 1.0 - volatility_normalized * 10)
 
         # Combine
-        confidence = (
-            regime_confidence ** 0.5 *
-            sample_factor ** 0.3 *
-            volatility_factor ** 0.2
-        )
+        confidence = regime_confidence**0.5 * sample_factor**0.3 * volatility_factor**0.2
 
         return min(confidence, 0.95)
 

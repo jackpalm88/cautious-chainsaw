@@ -65,9 +65,7 @@ class PreEventRiskManager:
             current_time = datetime.utcnow()
 
         # Find most impactful upcoming event
-        max_impact_event = max(
-            upcoming_events, key=lambda x: self._get_impact_priority(x.impact)
-        )
+        max_impact_event = max(upcoming_events, key=lambda x: self._get_impact_priority(x.impact))
 
         # Calculate time to event
         time_to_event = (max_impact_event.scheduled_time - current_time).total_seconds()
@@ -80,9 +78,7 @@ class PreEventRiskManager:
             )
 
         # Apply pre-event confidence penalty
-        multiplier = self._get_confidence_multiplier(
-            max_impact_event.impact, minutes_to_event
-        )
+        multiplier = self._get_confidence_multiplier(max_impact_event.impact, minutes_to_event)
 
         adjusted_confidence = base_confidence * multiplier
 
@@ -104,9 +100,7 @@ class PreEventRiskManager:
                     "title": event.title,
                     "impact": event.impact,
                     "scheduled_time": event.scheduled_time.isoformat(),
-                    "time_to_event_minutes": (
-                        event.scheduled_time - current_time
-                    ).total_seconds()
+                    "time_to_event_minutes": (event.scheduled_time - current_time).total_seconds()
                     / 60,
                 }
                 for event in upcoming_events
@@ -220,7 +214,10 @@ class PreEventRiskManager:
 
         # Halt trading if within 5 minutes of high impact event
         if 0 <= minutes_to_event <= 5:
-            return True, f"High impact event '{nearest_event.title}' in {minutes_to_event:.1f} minutes"
+            return (
+                True,
+                f"High impact event '{nearest_event.title}' in {minutes_to_event:.1f} minutes",
+            )
 
         return False, ""
 
@@ -246,9 +243,7 @@ class PreEventRiskManager:
             current_time = datetime.utcnow()
 
         # Find most impactful event
-        max_impact_event = max(
-            upcoming_events, key=lambda x: self._get_impact_priority(x.impact)
-        )
+        max_impact_event = max(upcoming_events, key=lambda x: self._get_impact_priority(x.impact))
 
         time_to_event = (max_impact_event.scheduled_time - current_time).total_seconds()
         minutes_to_event = time_to_event / 60
@@ -271,9 +266,7 @@ class PreEventRiskManager:
 
         return 1.0  # No adjustment
 
-    def get_affected_symbols(
-        self, upcoming_events: list[NormalizedEvent]
-    ) -> set[str]:
+    def get_affected_symbols(self, upcoming_events: list[NormalizedEvent]) -> set[str]:
         """
         Get all symbols affected by upcoming events
 

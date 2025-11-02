@@ -23,6 +23,7 @@ class StrategySignal:
         reasoning: Human-readable reasoning
         metadata: Additional strategy-specific data
     """
+
     action: str  # BUY, SELL, HOLD
     confidence: float
     stop_loss: float | None = None

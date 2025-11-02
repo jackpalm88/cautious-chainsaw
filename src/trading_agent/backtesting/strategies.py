@@ -26,7 +26,7 @@ def rsi_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
     if idx < 100:
         return {}  # Not enough data
 
-    prices = [b.close for b in engine.data[max(0, idx-100):idx+1]]
+    prices = [b.close for b in engine.data[max(0, idx - 100) : idx + 1]]
 
     # Calculate RSI
     rsi_result = engine.call_tool("calc_rsi", prices=prices, period=14)
@@ -51,7 +51,7 @@ def rsi_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
             "size": 0.01,  # 0.01 lots
             "stop_loss": bar.close - 0.0050,  # 50 pips below
             "take_profit": bar.close + 0.0100,  # 100 pips above
-            "reason": f"RSI oversold: {rsi:.1f}"
+            "reason": f"RSI oversold: {rsi:.1f}",
         }
 
     elif rsi > 70 and confidence > 0.7:
@@ -61,7 +61,7 @@ def rsi_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
             "size": 0.01,
             "stop_loss": bar.close + 0.0050,  # 50 pips above
             "take_profit": bar.close - 0.0100,  # 100 pips below
-            "reason": f"RSI overbought: {rsi:.1f}"
+            "reason": f"RSI overbought: {rsi:.1f}",
         }
 
     return signal
@@ -88,7 +88,7 @@ def macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
         return {}
 
     # Get prices
-    prices = [b.close for b in engine.data[max(0, idx-50):idx+1]]
+    prices = [b.close for b in engine.data[max(0, idx - 50) : idx + 1]]
 
     # Calculate MACD (mock - in production use actual tool)
     # macd_result = engine.call_tool("calc_macd", prices=prices)
@@ -107,7 +107,7 @@ def macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
     if idx < 27:
         return {}
 
-    prev_prices = [b.close for b in engine.data[max(0, idx-51):idx]]
+    prev_prices = [b.close for b in engine.data[max(0, idx - 51) : idx]]
     prev_ema12 = sum(prev_prices[-12:]) / 12
     prev_ema26 = sum(prev_prices[-26:]) / 26
     prev_macd = prev_ema12 - prev_ema26
@@ -125,7 +125,7 @@ def macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
             "size": 0.01,
             "stop_loss": bar.close - 0.0030,  # 30 pips
             "take_profit": bar.close + 0.0060,  # 60 pips
-            "reason": "MACD bullish crossover"
+            "reason": "MACD bullish crossover",
         }
 
     # Bearish crossover
@@ -135,7 +135,7 @@ def macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str, Any]:
             "size": 0.01,
             "stop_loss": bar.close + 0.0030,
             "take_profit": bar.close - 0.0060,
-            "reason": "MACD bearish crossover"
+            "reason": "MACD bearish crossover",
         }
 
     return signal
@@ -165,7 +165,7 @@ def combined_rsi_macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict
         return {}
 
     # Get RSI
-    prices = [b.close for b in engine.data[max(0, idx-100):idx+1]]
+    prices = [b.close for b in engine.data[max(0, idx - 100) : idx + 1]]
     rsi_result = engine.call_tool("calc_rsi", prices=prices, period=14)
 
     if rsi_result.get("error"):
@@ -185,7 +185,7 @@ def combined_rsi_macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict
     # Previous MACD
     if idx < 27:
         return {}
-    prev_prices = [b.close for b in engine.data[max(0, idx-101):idx]]
+    prev_prices = [b.close for b in engine.data[max(0, idx - 101) : idx]]
     prev_ema12 = sum(prev_prices[-12:]) / 12
     prev_ema26 = sum(prev_prices[-26:]) / 26
     prev_macd = prev_ema12 - prev_ema26
@@ -205,7 +205,7 @@ def combined_rsi_macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict
             "size": size,
             "stop_loss": bar.close - 0.0040,
             "take_profit": bar.close + 0.0080,
-            "reason": f"RSI {rsi:.1f} + MACD bullish"
+            "reason": f"RSI {rsi:.1f} + MACD bullish",
         }
 
     # Bearish confirmation
@@ -218,7 +218,7 @@ def combined_rsi_macd_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict
             "size": size,
             "stop_loss": bar.close + 0.0040,
             "take_profit": bar.close - 0.0080,
-            "reason": f"RSI {rsi:.1f} + MACD bearish"
+            "reason": f"RSI {rsi:.1f} + MACD bearish",
         }
 
     return signal
@@ -248,7 +248,7 @@ def adaptive_risk_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str
         return {}
 
     # Calculate recent volatility (ATR proxy)
-    recent_bars = engine.data[max(0, idx-20):idx+1]
+    recent_bars = engine.data[max(0, idx - 20) : idx + 1]
     ranges = [b.high - b.low for b in recent_bars]
     avg_range = sum(ranges) / len(ranges) if ranges else 0.0001
 
@@ -256,7 +256,7 @@ def adaptive_risk_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str
     volatility = avg_range / bar.close
 
     # Get RSI signal
-    prices = [b.close for b in engine.data[max(0, idx-100):idx+1]]
+    prices = [b.close for b in engine.data[max(0, idx - 100) : idx + 1]]
     rsi_result = engine.call_tool("calc_rsi", prices=prices, period=14)
 
     if rsi_result.get("error"):
@@ -293,7 +293,7 @@ def adaptive_risk_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str
             "size": position_size,
             "stop_loss": bar.close - stop_distance,
             "take_profit": bar.close + (stop_distance * 2),  # 2:1 RR
-            "reason": f"Adaptive RSI {rsi:.1f}, Vol: {volatility:.4f}"
+            "reason": f"Adaptive RSI {rsi:.1f}, Vol: {volatility:.4f}",
         }
 
     elif rsi > 70 and confidence > 0.7:
@@ -302,7 +302,7 @@ def adaptive_risk_strategy(engine: BacktestEngine, bar: BacktestBar) -> dict[str
             "size": position_size,
             "stop_loss": bar.close + stop_distance,
             "take_profit": bar.close - (stop_distance * 2),
-            "reason": f"Adaptive RSI {rsi:.1f}, Vol: {volatility:.4f}"
+            "reason": f"Adaptive RSI {rsi:.1f}, Vol: {volatility:.4f}",
         }
 
     return signal
@@ -313,7 +313,7 @@ STRATEGIES = {
     "rsi": rsi_strategy,
     "macd": macd_strategy,
     "combined": combined_rsi_macd_strategy,
-    "adaptive": adaptive_risk_strategy
+    "adaptive": adaptive_risk_strategy,
 }
 
 

@@ -158,9 +158,7 @@ class NewsNormalizer:
 
         return False
 
-    def normalize(
-        self, raw_news: dict[str, Any], source: str = "newsapi"
-    ) -> NormalizedNews:
+    def normalize(self, raw_news: dict[str, Any], source: str = "newsapi") -> NormalizedNews:
         """
         Normalize news from any source
 

@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 @dataclass
 class Decision:
     """Final trading decision"""
+
     action: str  # BUY, SELL, HOLD, CLOSE
     lots: float
     entry_price: float | None = None
@@ -53,7 +54,7 @@ class INoTOrchestrator:
         self,
         llm_client,  # LLM API client (e.g., Anthropic, OpenAI)
         config: dict,
-        validator: INoTValidator
+        validator: INoTValidator,
     ):
         self.llm = llm_client
         self.config = config
@@ -71,11 +72,7 @@ class INoTOrchestrator:
         self.daily_cost = 0.0
         self.daily_decisions = 0
 
-    def reason(
-        self,
-        context: 'FusedContext',
-        memory: 'MemorySnapshot'
-    ) -> Decision:
+    def reason(self, context: 'FusedContext', memory: 'MemorySnapshot') -> Decision:
         """
         Execute INoT multi-agent reasoning.
 
@@ -106,7 +103,7 @@ class INoTOrchestrator:
                 lots=0.0,
                 confidence=0.0,
                 reasoning=f"LLM call failed: {e}",
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
 
         # Step 3: Validate with auto-remediation
@@ -114,10 +111,7 @@ class INoTOrchestrator:
 
         if not validation_result.valid:
             # Remediation failed → try one LLM self-correction
-            correction_prompt = create_remediation_prompt(
-                validation_result.errors,
-                llm_output
-            )
+            correction_prompt = create_remediation_prompt(validation_result.errors, llm_output)
 
             try:
                 corrected_output = self._call_llm(correction_prompt)
@@ -131,7 +125,7 @@ class INoTOrchestrator:
                     lots=0.0,
                     confidence=0.0,
                     reasoning=f"Validation failed: {validation_result.errors}",
-                    timestamp=datetime.now()
+                    timestamp=datetime.now(),
                 )
 
         agents = validation_result.agents
@@ -154,7 +148,7 @@ class INoTOrchestrator:
                 timestamp=datetime.now(),
                 agent_outputs=agents,
                 vetoed=True,
-                veto_reason=veto_reason
+                veto_reason=veto_reason,
             )
 
         # Step 6: Extract final decision from Synthesis
@@ -170,7 +164,7 @@ class INoTOrchestrator:
             reasoning=synthesis_agent.get("reasoning_synthesis", ""),
             timestamp=datetime.now(),
             agent_outputs=agents,
-            vetoed=False
+            vetoed=False,
         )
 
         # Step 7: Business rule: If Risk requires SL, enforce it
@@ -187,11 +181,7 @@ class INoTOrchestrator:
 
         return decision
 
-    def _build_inot_prompt(
-        self,
-        context: 'FusedContext',
-        memory: 'MemorySnapshot'
-    ) -> str:
+    def _build_inot_prompt(self, context: 'FusedContext', memory: 'MemorySnapshot') -> str:
         """
         Build complete INoT multi-agent prompt.
 
@@ -331,7 +321,7 @@ Return JSON array now:
             prompt=prompt,
             model=self.model_version,
             temperature=self.temperature,
-            max_tokens=self.max_tokens
+            max_tokens=self.max_tokens,
         )
 
         # Track cost
@@ -347,21 +337,22 @@ Return JSON array now:
         output_tokens = response.usage.get("output_tokens", 1000)
 
         # $3 per 1M input, $15 per 1M output (example rates)
-        cost = (input_tokens / 1_000_000 * 3.0) + \
-               (output_tokens / 1_000_000 * 15.0)
+        cost = (input_tokens / 1_000_000 * 3.0) + (output_tokens / 1_000_000 * 15.0)
 
         return cost
 
     def _track_decision(self, decision: Decision):
         """Track decision for calibration analysis"""
-        self.calibration_data.append({
-            "timestamp": decision.timestamp,
-            "confidence": decision.confidence,
-            "action": decision.action,
-            # Outcome filled in later when position closes
-            "outcome": None,
-            "pnl": None
-        })
+        self.calibration_data.append(
+            {
+                "timestamp": decision.timestamp,
+                "confidence": decision.confidence,
+                "action": decision.action,
+                # Outcome filled in later when position closes
+                "outcome": None,
+                "pnl": None,
+            }
+        )
 
     def update_outcome(self, decision_id: str, outcome: str, pnl: float):
         """Update decision outcome for calibration"""
@@ -386,14 +377,13 @@ if __name__ == "__main__":
                   {"agent": "Synthesis", "final_decision": {"action": "BUY", "lots": 0.1, "stop_loss": 1.08, "confidence": 0.72}, "reasoning_synthesis": "Consensus buy", "agent_weights_applied": {"Signal": 0.7, "Risk": 0.8, "Context": 1.0}, "memory_update_intent": "RSI oversold in range"}
                 ]"""
                 usage = {"input_tokens": 3000, "output_tokens": 800}
+
             return MockResponse()
 
     # Setup
     validator = INoTValidator(Path("schemas/inot_agents.schema.json"))
     orchestrator = INoTOrchestrator(
-        llm_client=MockLLM(),
-        config={"temperature": 0.0},
-        validator=validator
+        llm_client=MockLLM(), config={"temperature": 0.0}, validator=validator
     )
 
     # Mock context

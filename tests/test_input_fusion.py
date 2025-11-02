@@ -111,13 +111,9 @@ class TestTemporalAligner:
         old_time = datetime.now() - timedelta(seconds=10)
         new_time = datetime.now()
 
-        event1 = StreamEvent(
-            stream_id="stream1", event_type="test", timestamp=old_time, data={}
-        )
+        event1 = StreamEvent(stream_id="stream1", event_type="test", timestamp=old_time, data={})
 
-        event2 = StreamEvent(
-            stream_id="stream1", event_type="test", timestamp=new_time, data={}
-        )
+        event2 = StreamEvent(stream_id="stream1", event_type="test", timestamp=new_time, data={})
 
         aligner.add_event(event1)
         aligner.add_event(event2)
@@ -148,9 +144,7 @@ class TestFusionBuffer:
 
         # Add multiple snapshots
         for i in range(5):
-            snapshot = FusedSnapshot(
-                timestamp=datetime.now(), data={"value": i}
-            )
+            snapshot = FusedSnapshot(timestamp=datetime.now(), data={"value": i})
             buffer.add_snapshot(snapshot)
 
         # Get latest 3
@@ -164,9 +158,7 @@ class TestFusionBuffer:
 
         # Add more than capacity
         for i in range(10):
-            snapshot = FusedSnapshot(
-                timestamp=datetime.now(), data={"value": i}
-            )
+            snapshot = FusedSnapshot(timestamp=datetime.now(), data={"value": i})
             buffer.add_snapshot(snapshot)
 
         # Buffer should be at capacity
@@ -180,9 +172,7 @@ class TestFusionBuffer:
         buffer = FusionBuffer(capacity=10)
 
         for i in range(5):
-            snapshot = FusedSnapshot(
-                timestamp=datetime.now(), data={"value": i}
-            )
+            snapshot = FusedSnapshot(timestamp=datetime.now(), data={"value": i})
             buffer.add_snapshot(snapshot)
 
         stats = buffer.get_stats()

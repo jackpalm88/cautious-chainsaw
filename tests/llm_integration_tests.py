@@ -25,21 +25,25 @@ from src.trading_agent.llm import AnthropicLLMClient
 @dataclass
 class TestResult:
     """Test result container"""
+
     test_name: str
     success: bool
     duration_ms: float
     details: dict[str, Any]
     error: str | None = None
 
+
 @dataclass
 class PerformanceMetrics:
     """Performance metrics for LLM calls"""
+
     avg_latency_ms: float
     p95_latency_ms: float
     p99_latency_ms: float
     total_tokens: int
     avg_tokens_per_call: float
     error_rate: float
+
 
 class LLMIntegrationTester:
     """Comprehensive test suite for LLM integration"""
@@ -85,7 +89,9 @@ class LLMIntegrationTester:
         start_time = time.time()
 
         try:
-            response = self.client.complete("Hello Claude, please respond with exactly: 'Integration test successful'")
+            response = self.client.complete(
+                "Hello Claude, please respond with exactly: 'Integration test successful'"
+            )
 
             duration_ms = (time.time() - start_time) * 1000
 
@@ -99,8 +105,8 @@ class LLMIntegrationTester:
                     "response_length": len(response.content),
                     "tokens_used": response.tokens_used,
                     "model": response.model_used,
-                    "confidence": response.confidence
-                }
+                    "confidence": response.confidence,
+                },
             )
 
             self.test_results.append(result)
@@ -112,7 +118,7 @@ class LLMIntegrationTester:
                 success=False,
                 duration_ms=(time.time() - start_time) * 1000,
                 details={},
-                error=str(e)
+                error=str(e),
             )
             self.test_results.append(result)
             self._log_test_result(result)
@@ -148,8 +154,8 @@ class LLMIntegrationTester:
                 details={
                     "response": response.content[:100],
                     "contains_action": has_action,
-                    "tokens_used": response.tokens_used
-                }
+                    "tokens_used": response.tokens_used,
+                },
             )
 
             self.test_results.append(result)
@@ -161,7 +167,7 @@ class LLMIntegrationTester:
                 success=False,
                 duration_ms=(time.time() - start_time) * 1000,
                 details={},
-                error=str(e)
+                error=str(e),
             )
             self.test_results.append(result)
             self._log_test_result(result)
@@ -175,16 +181,8 @@ class LLMIntegrationTester:
             context = {
                 "symbol": "EURUSD",
                 "prices": [1.0900, 1.0905, 1.0910, 1.0915, 1.0920],
-                "indicators": {
-                    "RSI": 65.5,
-                    "MACD": 0.0012,
-                    "signal": "BULLISH"
-                },
-                "account_info": {
-                    "balance": 10000.0,
-                    "equity": 10000.0,
-                    "free_margin": 9000.0
-                }
+                "indicators": {"RSI": 65.5, "MACD": 0.0012, "signal": "BULLISH"},
+                "account_info": {"balance": 10000.0, "equity": 10000.0, "free_margin": 9000.0},
             }
 
             tools = [
@@ -193,11 +191,8 @@ class LLMIntegrationTester:
                     "description": "Calculate RSI indicator",
                     "parameters": {
                         "type": "object",
-                        "properties": {
-                            "prices": {"type": "array"},
-                            "period": {"type": "integer"}
-                        }
-                    }
+                        "properties": {"prices": {"type": "array"}, "period": {"type": "integer"}},
+                    },
                 }
             ]
 
@@ -219,8 +214,8 @@ class LLMIntegrationTester:
                     "decision": decision,
                     "has_required_fields": has_required_fields,
                     "valid_action": valid_action,
-                    "valid_confidence": valid_confidence
-                }
+                    "valid_confidence": valid_confidence,
+                },
             )
 
             self.test_results.append(result)
@@ -232,7 +227,7 @@ class LLMIntegrationTester:
                 success=False,
                 duration_ms=(time.time() - start_time) * 1000,
                 details={},
-                error=str(e)
+                error=str(e),
             )
             self.test_results.append(result)
             self._log_test_result(result)
@@ -253,10 +248,10 @@ class LLMIntegrationTester:
                         "properties": {
                             "account_balance": {"type": "number"},
                             "risk_percent": {"type": "number"},
-                            "stop_loss_pips": {"type": "number"}
+                            "stop_loss_pips": {"type": "number"},
                         },
-                        "required": ["account_balance", "risk_percent", "stop_loss_pips"]
-                    }
+                        "required": ["account_balance", "risk_percent", "stop_loss_pips"],
+                    },
                 }
             ]
 
@@ -266,7 +261,9 @@ class LLMIntegrationTester:
             duration_ms = (time.time() - start_time) * 1000
 
             # Check if tools were mentioned or used
-            tools_mentioned = "calculate_position_size" in response.content or "tool" in response.content.lower()
+            tools_mentioned = (
+                "calculate_position_size" in response.content or "tool" in response.content.lower()
+            )
 
             result = TestResult(
                 test_name="tool_integration",
@@ -275,8 +272,8 @@ class LLMIntegrationTester:
                 details={
                     "response_snippet": response.content[:200],
                     "tools_mentioned": tools_mentioned,
-                    "tokens_used": response.tokens_used
-                }
+                    "tokens_used": response.tokens_used,
+                },
             )
 
             self.test_results.append(result)
@@ -288,7 +285,7 @@ class LLMIntegrationTester:
                 success=False,
                 duration_ms=(time.time() - start_time) * 1000,
                 details={},
-                error=str(e)
+                error=str(e),
             )
             self.test_results.append(result)
             self._log_test_result(result)
@@ -303,8 +300,8 @@ class LLMIntegrationTester:
                     "symbol": "GBPUSD",
                     "prices": [1.2500, 1.2510, 1.2520, 1.2530, 1.2540],
                     "indicators": {"RSI": 55, "MACD": 0.0020},
-                    "expected_bias": "bullish"
-                }
+                    "expected_bias": "bullish",
+                },
             },
             {
                 "name": "trending_down",
@@ -312,8 +309,8 @@ class LLMIntegrationTester:
                     "symbol": "USDJPY",
                     "prices": [150.00, 149.80, 149.60, 149.40, 149.20],
                     "indicators": {"RSI": 35, "MACD": -0.0030},
-                    "expected_bias": "bearish"
-                }
+                    "expected_bias": "bearish",
+                },
             },
             {
                 "name": "sideways",
@@ -321,9 +318,9 @@ class LLMIntegrationTester:
                     "symbol": "EURUSD",
                     "prices": [1.0900, 1.0905, 1.0900, 1.0895, 1.0900],
                     "indicators": {"RSI": 50, "MACD": 0.0001},
-                    "expected_bias": "neutral"
-                }
-            }
+                    "expected_bias": "neutral",
+                },
+            },
         ]
 
         scenario_results = []
@@ -332,11 +329,7 @@ class LLMIntegrationTester:
             start_time = time.time()
 
             try:
-                decision = self.client.reason_with_tools(
-                    scenario["context"],
-                    [],
-                    "trading"
-                )
+                decision = self.client.reason_with_tools(scenario["context"], [], "trading")
 
                 duration_ms = (time.time() - start_time) * 1000
 
@@ -345,9 +338,9 @@ class LLMIntegrationTester:
                 expected = scenario["expected_bias"]
 
                 alignment = (
-                    (expected == "bullish" and action == "BUY") or
-                    (expected == "bearish" and action == "SELL") or
-                    (expected == "neutral" and action == "HOLD")
+                    (expected == "bullish" and action == "BUY")
+                    or (expected == "bearish" and action == "SELL")
+                    or (expected == "neutral" and action == "HOLD")
                 )
 
                 scenario_result = {
@@ -356,7 +349,7 @@ class LLMIntegrationTester:
                     "action": action,
                     "expected": expected,
                     "confidence": decision.get("confidence", 0),
-                    "duration_ms": duration_ms
+                    "duration_ms": duration_ms,
                 }
 
                 scenario_results.append(scenario_result)
@@ -366,7 +359,7 @@ class LLMIntegrationTester:
                     "scenario": scenario["name"],
                     "success": False,
                     "error": str(e),
-                    "duration_ms": (time.time() - start_time) * 1000
+                    "duration_ms": (time.time() - start_time) * 1000,
                 }
                 scenario_results.append(scenario_result)
 
@@ -380,8 +373,8 @@ class LLMIntegrationTester:
             details={
                 "scenarios": scenario_results,
                 "success_rate": success_rate,
-                "total_scenarios": len(scenarios)
-            }
+                "total_scenarios": len(scenarios),
+            },
         )
 
         self.test_results.append(result)
@@ -399,18 +392,22 @@ class LLMIntegrationTester:
             start_time = time.time()
 
             try:
-                response = self.client.complete(f"Quick trading analysis #{i+1}: EURUSD at 1.09{i:02d}, RSI 6{i}, recommend action in one word.")
+                response = self.client.complete(
+                    f"Quick trading analysis #{i + 1}: EURUSD at 1.09{i:02d}, RSI 6{i}, recommend action in one word."
+                )
 
                 latency = (time.time() - start_time) * 1000
                 latencies.append(latency)
                 token_counts.append(response.tokens_used)
 
-                self.performance_data.append({
-                    "test_id": i,
-                    "latency_ms": latency,
-                    "tokens": response.tokens_used,
-                    "timestamp": datetime.now().isoformat()
-                })
+                self.performance_data.append(
+                    {
+                        "test_id": i,
+                        "latency_ms": latency,
+                        "tokens": response.tokens_used,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
 
             except Exception as e:
                 errors += 1
@@ -435,11 +432,8 @@ class LLMIntegrationTester:
                 "p95_latency_ms": p95_latency,
                 "avg_tokens": avg_tokens,
                 "error_rate": error_rate,
-                "targets_met": {
-                    "latency": latency_ok,
-                    "error_rate": error_rate_ok
-                }
-            }
+                "targets_met": {"latency": latency_ok, "error_rate": error_rate_ok},
+            },
         )
 
         self.test_results.append(result)
@@ -451,7 +445,9 @@ class LLMIntegrationTester:
         async def make_request(request_id: int):
             try:
                 start_time = time.time()
-                response = self.client.complete(f"Concurrent test {request_id}: Quick EURUSD analysis")
+                response = self.client.complete(
+                    f"Concurrent test {request_id}: Quick EURUSD analysis"
+                )
                 duration = (time.time() - start_time) * 1000
                 return {"success": True, "duration": duration, "tokens": response.tokens_used}
             except Exception as e:
@@ -470,7 +466,9 @@ class LLMIntegrationTester:
             concurrent_results = asyncio.run(run_concurrent_test())
             duration_ms = (time.time() - start_time) * 1000
 
-            success_count = sum(1 for r in concurrent_results if isinstance(r, dict) and r.get("success"))
+            success_count = sum(
+                1 for r in concurrent_results if isinstance(r, dict) and r.get("success")
+            )
             success_rate = success_count / len(concurrent_results)
 
             result = TestResult(
@@ -481,8 +479,8 @@ class LLMIntegrationTester:
                     "concurrent_requests": len(concurrent_results),
                     "success_count": success_count,
                     "success_rate": success_rate,
-                    "results": concurrent_results
-                }
+                    "results": concurrent_results,
+                },
             )
 
         except Exception as e:
@@ -491,7 +489,7 @@ class LLMIntegrationTester:
                 success=False,
                 duration_ms=(time.time() - start_time) * 1000,
                 details={},
-                error=str(e)
+                error=str(e),
             )
 
         self.test_results.append(result)
@@ -520,10 +518,7 @@ class LLMIntegrationTester:
                 test_name="error_handling",
                 success=success and error_handled,
                 duration_ms=(time.time() - start_time) * 1000,
-                details={
-                    "error_properly_handled": error_handled,
-                    "test_type": "invalid_api_key"
-                }
+                details={"error_properly_handled": error_handled, "test_type": "invalid_api_key"},
             )
 
         except Exception as e:
@@ -532,7 +527,7 @@ class LLMIntegrationTester:
                 success=False,
                 duration_ms=(time.time() - start_time) * 1000,
                 details={},
-                error=str(e)
+                error=str(e),
             )
 
         self.test_results.append(result)
@@ -550,8 +545,8 @@ class LLMIntegrationTester:
             duration_ms=0,
             details={
                 "note": "Fallback testing requires full integration setup",
-                "recommendation": "Test manually with invalid API key"
-            }
+                "recommendation": "Test manually with invalid API key",
+            },
         )
 
         self.test_results.append(result)
@@ -568,7 +563,7 @@ class LLMIntegrationTester:
         elif result.details:
             # Print key details
             for key, value in result.details.items():
-                if isinstance(value, (str, int, float, bool)):
+                if isinstance(value, str | int | float | bool):
                     print(f"    {key}: {value}")
 
     def _generate_test_report(self) -> dict[str, Any]:
@@ -593,7 +588,7 @@ class LLMIntegrationTester:
                 p99_latency_ms=sorted(latencies)[int(0.99 * len(latencies))],
                 total_tokens=sum(tokens),
                 avg_tokens_per_call=sum(tokens) / len(tokens),
-                error_rate=0.0  # Will be calculated separately
+                error_rate=0.0,  # Will be calculated separately
             )
 
         report = {
@@ -603,12 +598,12 @@ class LLMIntegrationTester:
                 "failed": failed_tests,
                 "success_rate": passed_tests / total_tests if total_tests > 0 else 0,
                 "total_duration_ms": total_duration,
-                "avg_duration_ms": avg_duration
+                "avg_duration_ms": avg_duration,
             },
             "test_results": [asdict(r) for r in self.test_results],
             "performance_metrics": asdict(performance_metrics) if performance_metrics else None,
             "recommendations": self._generate_recommendations(),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return report
@@ -622,24 +617,35 @@ class LLMIntegrationTester:
         success_rate = sum(1 for r in self.test_results if r.success) / len(self.test_results)
 
         if success_rate < 0.8:
-            recommendations.append("❗ Low success rate - investigate failed tests before production deployment")
+            recommendations.append(
+                "❗ Low success rate - investigate failed tests before production deployment"
+            )
 
         # Check performance
-        perf_test = next((r for r in self.test_results if r.test_name == "performance_characteristics"), None)
+        perf_test = next(
+            (r for r in self.test_results if r.test_name == "performance_characteristics"), None
+        )
         if perf_test and perf_test.success:
             avg_latency = perf_test.details.get("avg_latency_ms", 0)
             if avg_latency > 2000:
-                recommendations.append("⚠️ High latency detected - consider performance optimization")
+                recommendations.append(
+                    "⚠️ High latency detected - consider performance optimization"
+                )
 
         # Check trading decisions
-        trading_test = next((r for r in self.test_results if r.test_name == "trading_decision"), None)
+        trading_test = next(
+            (r for r in self.test_results if r.test_name == "trading_decision"), None
+        )
         if trading_test and not trading_test.success:
-            recommendations.append("❗ Trading decision test failed - validate JSON response format")
+            recommendations.append(
+                "❗ Trading decision test failed - validate JSON response format"
+            )
 
         if not recommendations:
             recommendations.append("✅ All tests look good - ready for production deployment!")
 
         return recommendations
+
 
 def main():
     """Run the test suite"""
@@ -681,6 +687,7 @@ def main():
         json.dump(report, f, indent=2)
 
     print(f"\n📄 Detailed report saved to: {report_file}")
+
 
 if __name__ == "__main__":
     main()

@@ -66,7 +66,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
                 login=self.config['login'],
                 password=self.config['password'],
                 server=self.config['server'],
-                timeout=self.config.get('timeout', 60000)
+                timeout=self.config.get('timeout', 60000),
             )
 
             if not authorized:
@@ -125,7 +125,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
             max_volume=info.volume_max,
             volume_step=info.volume_step,
             min_stop_distance=info.trade_stops_level,
-            trade_mode='FULL' if info.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL else 'DISABLED'
+            trade_mode='FULL' if info.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL else 'DISABLED',
         )
 
     async def current_price(self, symbol: str) -> tuple[float, float] | None:
@@ -149,7 +149,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
             return OrderResult(
                 success=False,
                 error_code=ErrorCode.NOT_CONNECTED,
-                error_message="Not connected to MT5"
+                error_message="Not connected to MT5",
             )
 
         try:
@@ -159,7 +159,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
                 return OrderResult(
                     success=False,
                     error_code=ErrorCode.SYMBOL_NOT_FOUND,
-                    error_message=f"Symbol {request.symbol} not found"
+                    error_message=f"Symbol {request.symbol} not found",
                 )
 
             # Get current price
@@ -168,7 +168,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
                 return OrderResult(
                     success=False,
                     error_code=ErrorCode.NO_FILL,
-                    error_message="Failed to get current price"
+                    error_message="Failed to get current price",
                 )
 
             # Determine order type and price
@@ -188,7 +188,9 @@ class RealMT5Adapter(BaseExecutionAdapter):
                 'price': price,
                 'deviation': request.deviation,
                 'magic': request.magic,
-                'comment': request.comment[:31] if request.comment else "",  # MT5 limits to 31 chars
+                'comment': request.comment[:31]
+                if request.comment
+                else "",  # MT5 limits to 31 chars
                 'type_time': mt5.ORDER_TIME_GTC,
                 'type_filling': mt5.ORDER_FILLING_IOC,
             }
@@ -208,7 +210,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
                 return OrderResult(
                     success=False,
                     error_code=ErrorCode.UNHANDLED,
-                    error_message="order_send returned None"
+                    error_message="order_send returned None",
                 )
 
             # Check result
@@ -219,29 +221,25 @@ class RealMT5Adapter(BaseExecutionAdapter):
                 logger.warning(f"MT5 order failed: {error_message} (code: {result.retcode})")
 
                 return OrderResult(
-                    success=False,
-                    error_code=error_code,
-                    error_message=error_message
+                    success=False, error_code=error_code, error_message=error_message
                 )
 
             # Success
-            logger.info(f"MT5 order executed: ID={result.order}, Fill={result.price}, Volume={result.volume}")
+            logger.info(
+                f"MT5 order executed: ID={result.order}, Fill={result.price}, Volume={result.volume}"
+            )
 
             return OrderResult(
                 success=True,
                 order_id=result.order,
                 fill_price=result.price,
                 fill_volume=result.volume,
-                error_code=ErrorCode.SUCCESS
+                error_code=ErrorCode.SUCCESS,
             )
 
         except Exception as e:
             logger.error(f"MT5 order exception: {str(e)}")
-            return OrderResult(
-                success=False,
-                error_code=ErrorCode.UNHANDLED,
-                error_message=str(e)
-            )
+            return OrderResult(success=False, error_code=ErrorCode.UNHANDLED, error_message=str(e))
 
     async def order_fill_price(self, order_id: int) -> float | None:
         """Get fill price for order"""
@@ -278,7 +276,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
             margin=account.margin,
             free_margin=account.margin_free,
             margin_level=account.margin_level,
-            leverage=account.leverage
+            leverage=account.leverage,
         )
 
     async def open_positions(self, symbol: str | None = None) -> list[PositionInfo]:
@@ -305,7 +303,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
                 profit=pos.profit,
                 stop_loss=pos.sl if pos.sl != 0.0 else None,
                 take_profit=pos.tp if pos.tp != 0.0 else None,
-                open_time=datetime.fromtimestamp(pos.time)
+                open_time=datetime.fromtimestamp(pos.time),
             )
             for pos in positions
         ]
@@ -379,7 +377,7 @@ class RealMT5Adapter(BaseExecutionAdapter):
             10033: 'Pending orders limit reached',
             10034: 'Order/position volume limit reached',
             10035: 'Invalid order type',
-            10036: 'Position already closed'
+            10036: 'Position already closed',
         }
 
         return error_map.get(retcode, f'Unknown MT5 error code: {retcode}')

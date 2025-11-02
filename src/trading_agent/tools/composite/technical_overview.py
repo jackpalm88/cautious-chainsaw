@@ -54,7 +54,9 @@ class TechnicalOverview(BaseTool):
             bb_std: Bollinger Bands std multiplier (default: 2.0)
         """
         self.rsi_tool = CalcRSI(period=rsi_period)
-        self.macd_tool = CalcMACD(fast_period=macd_fast, slow_period=macd_slow, signal_period=macd_signal)
+        self.macd_tool = CalcMACD(
+            fast_period=macd_fast, slow_period=macd_slow, signal_period=macd_signal
+        )
         self.bb_tool = CalcBollingerBands(period=bb_period, std_multiplier=bb_std)
 
     def execute(self, prices: list[float], **kwargs) -> ToolResult:
@@ -106,10 +108,7 @@ class TechnicalOverview(BaseTool):
 
             # Calculate combined confidence
             combined_confidence = self._combine_confidence(
-                rsi_result.confidence,
-                macd_result.confidence,
-                bb_result.confidence,
-                agreement_score
+                rsi_result.confidence, macd_result.confidence, bb_result.confidence, agreement_score
             )
 
             # Calculate latency
@@ -157,16 +156,13 @@ class TechnicalOverview(BaseTool):
                         'bollinger_bands': bb_result.latency_ms,
                     },
                     'samples_used': len(prices),
-                }
+                },
             )
 
         except Exception as e:
             latency_ms = (time.perf_counter() - start_time) * 1000
             return ToolResult(
-                value=None,
-                confidence=0.0,
-                latency_ms=round(latency_ms, 2),
-                error=str(e)
+                value=None, confidence=0.0, latency_ms=round(latency_ms, 2), error=str(e)
             )
 
     def validate_inputs(self, prices: list[float]) -> None:
@@ -178,13 +174,11 @@ class TechnicalOverview(BaseTool):
         min_required = max(
             self.rsi_tool.period,
             self.macd_tool.slow_period + self.macd_tool.signal_period,
-            self.bb_tool.period
+            self.bb_tool.period,
         )
 
         if len(prices) < min_required:
-            raise ValueError(
-                f"Insufficient data: need {min_required} prices, got {len(prices)}"
-            )
+            raise ValueError(f"Insufficient data: need {min_required} prices, got {len(prices)}")
 
     def _calculate_agreement(self, signals: dict[str, str]) -> float:
         """
@@ -217,11 +211,7 @@ class TechnicalOverview(BaseTool):
         max_agreement = max(bullish_count, bearish_count, neutral_count)
         return max_agreement / total
 
-    def _aggregate_signals(
-        self,
-        signals: dict[str, str],
-        agreement_score: float
-    ) -> str:
+    def _aggregate_signals(self, signals: dict[str, str], agreement_score: float) -> str:
         """
         Aggregate individual signals into unified signal.
 
@@ -247,11 +237,7 @@ class TechnicalOverview(BaseTool):
             return 'neutral'
 
     def _combine_confidence(
-        self,
-        rsi_conf: float,
-        macd_conf: float,
-        bb_conf: float,
-        agreement_score: float
+        self, rsi_conf: float, macd_conf: float, bb_conf: float, agreement_score: float
     ) -> float:
         """
         Combine individual confidences with agreement score.

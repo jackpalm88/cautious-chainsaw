@@ -115,9 +115,7 @@ class InputFusionEngine:
         while self.is_running:
             try:
                 # Collect events from all streams
-                tasks = [
-                    stream.get_event(timeout=0.1) for stream in self.streams.values()
-                ]
+                tasks = [stream.get_event(timeout=0.1) for stream in self.streams.values()]
 
                 if tasks:
                     events = await asyncio.gather(*tasks, return_exceptions=True)
@@ -198,10 +196,7 @@ class InputFusionEngine:
 
     def get_stats(self) -> dict[str, Any]:
         """Get engine statistics"""
-        stream_stats = {
-            stream_id: stream.get_stats()
-            for stream_id, stream in self.streams.items()
-        }
+        stream_stats = {stream_id: stream.get_stats() for stream_id, stream in self.streams.items()}
 
         return {
             "is_running": self.is_running,

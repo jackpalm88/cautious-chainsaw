@@ -22,6 +22,7 @@ from .adapter_mock import MockAdapter
 # RealMT5Adapter is optional (requires MetaTrader5 package)
 try:
     from .adapter_mt5 import RealMT5Adapter
+
     _HAS_MT5 = True
 except ImportError:
     RealMT5Adapter = None
@@ -39,10 +40,8 @@ __all__ = [
     'BaseExecutionAdapter',
     'MockAdapter',
     'RealMT5Adapter',
-
     # Bridge
     'MT5ExecutionBridge',
-
     # Data Structures
     'Signal',
     'OrderDirection',
@@ -53,10 +52,8 @@ __all__ = [
     'PositionInfo',
     'ExecutionResult',
     'ExecutionStatus',
-
     # Error Handling
     'ErrorCode',
-
     # Version
-    '__version__'
+    '__version__',
 ]

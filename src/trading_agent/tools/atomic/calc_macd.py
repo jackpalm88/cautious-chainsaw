@@ -86,16 +86,13 @@ class CalcMACD(BaseTool):
                     'confidence_components': confidence_components.to_dict(),
                     'samples_used': len(prices),
                     'required_samples': self.slow_period + self.signal_period,
-                }
+                },
             )
 
         except Exception as e:
             latency_ms = (time.perf_counter() - start_time) * 1000
             return ToolResult(
-                value=None,
-                confidence=0.0,
-                latency_ms=round(latency_ms, 2),
-                error=str(e)
+                value=None, confidence=0.0, latency_ms=round(latency_ms, 2), error=str(e)
             )
 
     def validate_inputs(self, prices: list[float]) -> None:
@@ -162,7 +159,7 @@ class CalcMACD(BaseTool):
 
         # Signal line (EMA of MACD)
         if len(macd_history) >= self.signal_period:
-            macd_array = np.array(macd_history[-self.signal_period:])
+            macd_array = np.array(macd_history[-self.signal_period :])
             signal = self._calculate_ema(macd_array, self.signal_period)
         else:
             signal = macd  # Not enough data for signal
@@ -188,7 +185,7 @@ class CalcMACD(BaseTool):
 
         # Data quality
         gaps = 0
-        flat_periods = sum(1 for i in range(1, len(prices)) if prices[i] == prices[i-1])
+        flat_periods = sum(1 for i in range(1, len(prices)) if prices[i] == prices[i - 1])
         data_quality = ConfidenceCalculator.data_quality(gaps, flat_periods, len(prices))
 
         # Indicator agreement (single indicator)

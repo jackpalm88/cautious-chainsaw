@@ -150,18 +150,10 @@ class TestStrategyCompiler:
         dsl = {
             "name": "test_strategy",
             "description": "Test strategy",
-            "metadata": {
-                "author": "Test",
-                "version": "1.0.0"
-            },
-            "conditions": [
-                {"field": "rsi", "operator": "<", "value": 30}
-            ],
+            "metadata": {"author": "Test", "version": "1.0.0"},
+            "conditions": [{"field": "rsi", "operator": "<", "value": 30}],
             "action": "BUY",
-            "risk": {
-                "stop_loss_percent": 1.0,
-                "max_risk_per_trade_percent": 1.0
-            }
+            "risk": {"stop_loss_percent": 1.0, "max_risk_per_trade_percent": 1.0},
         }
 
         is_valid, error = compiler.validate(dsl)
