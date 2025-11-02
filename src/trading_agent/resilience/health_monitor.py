@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable, Dict, Iterable, List, Mapping, Optional
 
 __all__ = ["ServiceStatus", "ServiceHealth", "HealthMonitor"]
 
@@ -26,7 +26,7 @@ class ServiceHealth:
     name: str
     status: ServiceStatus
     checked_at: float
-    latency_ms: Optional[float] = None
+    latency_ms: float | None = None
     details: Mapping[str, str] = field(default_factory=dict)
 
 
@@ -37,7 +37,7 @@ class HealthMonitor:
     """Registry of service health checks with thread-safe evaluation."""
 
     def __init__(self) -> None:
-        self._checks: Dict[str, HealthCheck] = {}
+        self._checks: dict[str, HealthCheck] = {}
         self._lock = threading.RLock()
 
     # ------------------------------------------------------------------
@@ -65,7 +65,7 @@ class HealthMonitor:
             raise KeyError(f"health check '{name}' is not registered")
         return check()
 
-    def evaluate_all(self) -> List[ServiceHealth]:
+    def evaluate_all(self) -> list[ServiceHealth]:
         """Run every registered health check."""
 
         with self._lock:

@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import random
 import time
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
-from typing import Callable, Generator, Iterable, Optional, TypeVar
+from typing import TypeVar
 
 __all__ = ["RetryStrategy", "exponential_backoff", "run_with_retry", "RetryError"]
 
@@ -34,7 +35,7 @@ class RetryStrategy:
         """Yields the delay before each retry."""
 
         delay = self.base_delay
-        for attempt in range(self.max_attempts):
+        for _attempt in range(self.max_attempts):
             # Decorrelated jitter helps avoid thundering herds when multiple
             # workers retry the same dependency simultaneously.
             jitter = random.uniform(-self.jitter_ratio, self.jitter_ratio)
@@ -42,7 +43,7 @@ class RetryStrategy:
             delay = min(self.max_delay, delay * self.multiplier)
 
 
-def exponential_backoff(strategy: Optional[RetryStrategy] = None) -> Iterable[float]:
+def exponential_backoff(strategy: RetryStrategy | None = None) -> Iterable[float]:
     """Convenience wrapper returning the retry delay generator."""
 
     return (delay for delay in (strategy or RetryStrategy()).schedule())
@@ -50,8 +51,8 @@ def exponential_backoff(strategy: Optional[RetryStrategy] = None) -> Iterable[fl
 
 def run_with_retry(
     operation: Callable[[], _ResultT],
-    strategy: Optional[RetryStrategy] = None,
-    on_error: Optional[Callable[[Exception, int], None]] = None,
+    strategy: RetryStrategy | None = None,
+    on_error: Callable[[Exception, int], None] | None = None,
     sleep: Callable[[float], None] = time.sleep,
 ) -> _ResultT:
     """Execute ``operation`` while applying a retry policy.
@@ -70,7 +71,7 @@ def run_with_retry(
     """
 
     policy = strategy or RetryStrategy()
-    last_error: Optional[Exception] = None
+    last_error: Exception | None = None
 
     for attempt, delay in enumerate(policy.schedule(), start=1):
         try:

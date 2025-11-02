@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional
+from typing import Any
 
 __all__ = ["FallbackHandler", "FallbackRegistry", "FallbackError"]
 
@@ -28,7 +29,7 @@ class FallbackRegistry:
     """Mapping from a capability identifier to fallback handlers."""
 
     def __init__(self) -> None:
-        self._handlers: Dict[str, FallbackHandler] = {}
+        self._handlers: dict[str, FallbackHandler] = {}
 
     def register(self, capability: str, handler: Callable[..., Any], description: str = "") -> None:
         self._handlers[capability] = FallbackHandler(capability, handler, description)
@@ -46,7 +47,7 @@ class FallbackRegistry:
         handler = self.get(capability)
         return handler(*args, **kwargs)
 
-    def describe(self, capability: str) -> Optional[str]:
+    def describe(self, capability: str) -> str | None:
         handler = self._handlers.get(capability)
         if handler is None:
             return None

@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 __all__ = [
     "CircuitBreaker",
@@ -80,13 +81,13 @@ class CircuitBreaker(Generic[_ResponseT]):
     ``CLOSED`` -> ``OPEN`` -> ``HALF_OPEN`` -> ``CLOSED`` as stability returns.
     """
 
-    def __init__(self, config: Optional[CircuitBreakerConfig] = None) -> None:
+    def __init__(self, config: CircuitBreakerConfig | None = None) -> None:
         self._config = config or CircuitBreakerConfig()
         self._lock = threading.RLock()
         self._state = CircuitBreakerState.CLOSED
         self._failure_count = 0
         self._half_open_success_count = 0
-        self._opened_at: Optional[float] = None
+        self._opened_at: float | None = None
 
     # ------------------------------------------------------------------
     # State transitions
