@@ -312,6 +312,8 @@ Located in `/docs`:
 - `technical_postmortem_v1.md` - v1.0 post-mortem analysis
 - `tool_stack_architecture_final.md` - Complete architecture spec (from uploads)
 - `tool_stack_inot_deep_dive.md` - Multi-agent design analysis (from uploads)
+- `RESILIENCE_HANDLING_AND_CIRCUIT_BREAKERS.md` - Error handling, circuit breaker,
+  retry, and fallback integration guide
 
 ### Demo Scripts
 
