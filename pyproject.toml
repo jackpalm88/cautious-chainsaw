@@ -107,10 +107,8 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+pythonpath = ["src"]
 addopts = [
-    "--cov=src/trading_agent",
-    "--cov-report=term-missing",
-    "--cov-report=html",
     "--strict-markers",
     "-v"
 ]
@@ -118,6 +116,7 @@ markers = [
     "unit: Unit tests (fast, no external dependencies)",
     "integration: Integration tests (may require broker connections)",
     "slow: Slow tests (>1 second)",
+    "asyncio: Tests that require the pytest-asyncio plugin",
 ]
 
 [tool.coverage.run]

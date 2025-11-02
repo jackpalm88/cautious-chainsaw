@@ -1,14 +1,5 @@
-"""
-Memory Storage Backends
+"""Compatibility wrapper for the relocated Memory storage package."""
 
-Abstract storage interface with multiple implementations.
-"""
+from Memory.storage import *  # noqa: F401,F403
 
-from .base import MemoryStore, StorageError
-from .sqlite_store import SQLiteMemoryStore
-
-__all__ = [
-    'MemoryStore',
-    'StorageError',
-    'SQLiteMemoryStore',
-]
+__all__ = [name for name in globals() if not name.startswith("_")]
