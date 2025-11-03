@@ -1,0 +1,39 @@
+# config/production.yaml
+
+# Broker Configuration
+broker:
+  type: mock  # Change to 'mt5' for production
+  server: ${MT5_SERVER}
+  login: ${MT5_LOGIN}
+  password: ${MT5_PASSWORD}
+
+# Trading Parameters  
+trading:
+  symbol: EURUSD
+  timeframe: H1
+  min_confidence: 0.7
+  loop_interval: 60  # seconds
+  
+# Risk Management
+risk:
+  max_position_size: 0.02  # 2% per trade
+  max_drawdown: 0.10 # 10% max drawdown
+  
+# Memory Configuration
+memory:
+  db_path: ./data/memory.db
+  
+# INoT Engine Configuration
+inot:
+  threshold: 0.7
+  
+# Fusion Engine Configuration
+fusion:
+  window_ms: 100
+  buffer_size: 1000
+  
+# Resilience Configuration
+resilience:
+  failure_threshold: 3
+  recovery_timeout: 20
+  half_open_max_successes: 2
