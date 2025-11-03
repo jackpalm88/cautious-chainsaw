@@ -9,7 +9,7 @@ from typing import Any
 import yaml
 from dotenv import load_dotenv
 
-from Memory import SQLiteMemoryStore, StoredDecision, StorageError
+from Memory import SQLiteMemoryStore, StorageError, StoredDecision
 from trading_agent.adapters.adapter_mock import MockAdapter
 from trading_agent.adapters.adapter_mt5 import RealMT5Adapter
 from trading_agent.adapters.bridge import (
@@ -18,15 +18,23 @@ from trading_agent.adapters.bridge import (
     Signal,
 )
 from trading_agent.decision.engine import FusedContext
-from trading_agent.inot_engine.orchestrator import Decision as InotDecision, INoTOrchestrator
+from trading_agent.inot_engine.orchestrator import (
+    Decision as InotDecision,
+    INoTOrchestrator,
+)
 from trading_agent.inot_engine.validator import INoTValidator
-
-# Import all completed modules
 from trading_agent.input_fusion.engine import InputFusionEngine
 from trading_agent.llm.anthropic_llm_client import LLMConfig, create_llm_client
 from trading_agent.llm.inot_adapter import INoTLLMAdapter
-from trading_agent.resilience.circuit_breaker import CircuitBreaker, CircuitBreakerConfig
-from trading_agent.resilience.health_monitor import HealthMonitor, ServiceHealth, ServiceStatus
+from trading_agent.resilience.circuit_breaker import (
+    CircuitBreaker,
+    CircuitBreakerConfig,
+)
+from trading_agent.resilience.health_monitor import (
+    HealthMonitor,
+    ServiceHealth,
+    ServiceStatus,
+)
 from trading_agent.strategies.compiler import StrategyCompiler
 from trading_agent.strategies.registry import StrategyRegistry
 from trading_agent.strategies.selector import StrategySelector
@@ -67,7 +75,7 @@ class TradingAgent:
 
         missing = [var for var in required_env_vars if not os.getenv(var)]
         if missing:
-            raise EnvironmentError(
+            raise OSError(
                 "Missing required environment variables: "
                 + ", ".join(sorted(missing))
             )
@@ -76,9 +84,9 @@ class TradingAgent:
         """Load configuration from file."""
 
         try:
-            with open(path, "r", encoding="utf-8") as handle:
+            with open(path, encoding="utf-8") as handle:
                 config = yaml.safe_load(handle) or {}
-        except FileNotFoundError as exc:
+        except FileNotFoundError:
             logger.error("Configuration file not found at %s", path)
             raise
         except Exception as exc:
@@ -747,10 +755,11 @@ class TradingAgent:
         max_lots = float(risk_config.get("max_position_size", 0.1))
 
         suggested_lots = inot_decision.lots
-        if not suggested_lots and getattr(strategy_signal, "metadata", None):
-            suggested_lots = strategy_signal.metadata.get("position_size")
+        metadata = strategy_signal.metadata if hasattr(strategy_signal, "metadata") else None
+        if not suggested_lots and isinstance(metadata, dict):
+            suggested_lots = metadata.get("position_size")
         if not suggested_lots and hasattr(strategy_signal, "position_size"):
-            suggested_lots = getattr(strategy_signal, "position_size")
+            suggested_lots = strategy_signal.position_size
 
         if not suggested_lots:
             suggested_lots = max_lots
