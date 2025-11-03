@@ -301,9 +301,7 @@ class StrategyRegistry:
             conn.commit()
             return cursor.lastrowid
 
-    def get_backtest_results(
-        self, strategy_name: str, limit: int = 10
-    ) -> list[dict[str, Any]]:
+    def get_backtest_results(self, strategy_name: str, limit: int = 10) -> list[dict[str, Any]]:
         """Get backtest results for strategy"""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row

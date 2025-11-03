@@ -34,7 +34,7 @@ class MockAdapter(BaseExecutionAdapter):
         success_rate: float = 0.95,
         latency_ms: float = 50.0,
         slippage_pips: float = 1.0,
-        initial_balance: float = 10000.0
+        initial_balance: float = 10000.0,
     ):
         """
         Initialize mock adapter.
@@ -75,7 +75,7 @@ class MockAdapter(BaseExecutionAdapter):
                 max_volume=100.0,
                 volume_step=0.01,
                 min_stop_distance=10,
-                trade_mode='FULL'
+                trade_mode='FULL',
             ),
             'GBPUSD': SymbolInfo(
                 symbol='GBPUSD',
@@ -85,7 +85,7 @@ class MockAdapter(BaseExecutionAdapter):
                 max_volume=100.0,
                 volume_step=0.01,
                 min_stop_distance=10,
-                trade_mode='FULL'
+                trade_mode='FULL',
             ),
             'USDJPY': SymbolInfo(
                 symbol='USDJPY',
@@ -95,7 +95,7 @@ class MockAdapter(BaseExecutionAdapter):
                 max_volume=100.0,
                 volume_step=0.01,
                 min_stop_distance=10,
-                trade_mode='FULL'
+                trade_mode='FULL',
             ),
         }
 
@@ -152,7 +152,7 @@ class MockAdapter(BaseExecutionAdapter):
             return OrderResult(
                 success=False,
                 error_code=ErrorCode.NOT_CONNECTED,
-                error_message="Not connected to execution provider"
+                error_message="Not connected to execution provider",
             )
 
         # Simulate latency
@@ -171,11 +171,7 @@ class MockAdapter(BaseExecutionAdapter):
             ]
             error_code, error_message = random.choice(error_scenarios)
 
-            return OrderResult(
-                success=False,
-                error_code=error_code,
-                error_message=error_message
-            )
+            return OrderResult(success=False, error_code=error_code, error_message=error_message)
 
         # Success - simulate execution
         symbol_info = await self.symbol_info(request.symbol)
@@ -183,7 +179,7 @@ class MockAdapter(BaseExecutionAdapter):
             return OrderResult(
                 success=False,
                 error_code=ErrorCode.SYMBOL_NOT_FOUND,
-                error_message=f"Symbol {request.symbol} not found"
+                error_message=f"Symbol {request.symbol} not found",
             )
 
         prices = await self.current_price(request.symbol)
@@ -191,7 +187,7 @@ class MockAdapter(BaseExecutionAdapter):
             return OrderResult(
                 success=False,
                 error_code=ErrorCode.NO_FILL,
-                error_message="Unable to get current price"
+                error_message="Unable to get current price",
             )
 
         bid, ask = prices
@@ -199,11 +195,19 @@ class MockAdapter(BaseExecutionAdapter):
         # Determine fill price with slippage
         if request.direction == 'LONG':
             base_price = ask
-            slippage = random.gauss(self._slippage_pips, self._slippage_pips * 0.3) * symbol_info.point * 10
+            slippage = (
+                random.gauss(self._slippage_pips, self._slippage_pips * 0.3)
+                * symbol_info.point
+                * 10
+            )
             fill_price = base_price + abs(slippage)  # Slippage against us
         else:
             base_price = bid
-            slippage = random.gauss(self._slippage_pips, self._slippage_pips * 0.3) * symbol_info.point * 10
+            slippage = (
+                random.gauss(self._slippage_pips, self._slippage_pips * 0.3)
+                * symbol_info.point
+                * 10
+            )
             fill_price = base_price - abs(slippage)  # Slippage against us
 
         # Generate order ID
@@ -221,7 +225,7 @@ class MockAdapter(BaseExecutionAdapter):
             profit=0.0,
             stop_loss=request.stop_loss,
             take_profit=request.take_profit,
-            open_time=datetime.now()
+            open_time=datetime.now(),
         )
         self._positions[order_id] = position
 
@@ -234,7 +238,7 @@ class MockAdapter(BaseExecutionAdapter):
             order_id=order_id,
             fill_price=fill_price,
             fill_volume=request.size,
-            error_code=ErrorCode.SUCCESS
+            error_code=ErrorCode.SUCCESS,
         )
 
     async def order_fill_price(self, order_id: int) -> float | None:
@@ -267,7 +271,7 @@ class MockAdapter(BaseExecutionAdapter):
             margin=self._margin,
             free_margin=free_margin,
             margin_level=margin_level,
-            leverage=100
+            leverage=100,
         )
 
     async def open_positions(self, symbol: str | None = None) -> list[PositionInfo]:

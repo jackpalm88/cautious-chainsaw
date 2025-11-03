@@ -245,10 +245,7 @@ class EventNormalizer:
         """Normalize impact string to HIGH/MEDIUM/LOW"""
         impact_lower = impact_str.lower()
 
-        if any(
-            word in impact_lower
-            for word in ["high", "3", "red", "important", "major"]
-        ):
+        if any(word in impact_lower for word in ["high", "3", "red", "important", "major"]):
             return "HIGH"
         elif any(word in impact_lower for word in ["medium", "2", "orange", "moderate"]):
             return "MEDIUM"

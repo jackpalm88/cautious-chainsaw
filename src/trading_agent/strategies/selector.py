@@ -126,9 +126,7 @@ class StrategySelector:
 
         return weighted_strategies
 
-    def _calculate_score(
-        self, result: dict[str, Any], metric: str, context: FusedContext
-    ) -> float:
+    def _calculate_score(self, result: dict[str, Any], metric: str, context: FusedContext) -> float:
         """
         Calculate strategy score
 

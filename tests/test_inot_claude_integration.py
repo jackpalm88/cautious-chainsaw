@@ -23,13 +23,13 @@ from trading_agent.llm import create_inot_adapter
 
 # Skip all tests if no API key
 pytestmark = pytest.mark.skipif(
-    not os.getenv("ANTHROPIC_API_KEY"),
-    reason="ANTHROPIC_API_KEY not set - skipping real API tests"
+    not os.getenv("ANTHROPIC_API_KEY"), reason="ANTHROPIC_API_KEY not set - skipping real API tests"
 )
 
 
 class MockMemory:
     """Mock memory for testing"""
+
     def to_summary(self, max_tokens=600):
         return """Recent Performance:
 - Last 5 trades: 3W/2L (60% win rate)
@@ -48,13 +48,17 @@ def orchestrator():
     """Create INoT orchestrator with real Claude API"""
     api_key = os.getenv("ANTHROPIC_API_KEY")
     adapter = create_inot_adapter(
-        api_key=api_key,
-        model="claude-sonnet-4-20250514",
-        max_tokens=4000,
-        temperature=0.0
+        api_key=api_key, model="claude-sonnet-4-20250514", max_tokens=4000, temperature=0.0
     )
 
-    schema_path = Path(__file__).parent.parent / "src" / "trading_agent" / "inot_engine" / "schemas" / "inot_agents.schema.json"
+    schema_path = (
+        Path(__file__).parent.parent
+        / "src"
+        / "trading_agent"
+        / "inot_engine"
+        / "schemas"
+        / "inot_agents.schema.json"
+    )
     validator = INoTValidator(schema_path)
 
     return INoTOrchestrator(
@@ -62,9 +66,9 @@ def orchestrator():
         config={
             "model_version": "claude-sonnet-4-20250514",
             "temperature": 0.0,
-            "max_tokens": 4000
+            "max_tokens": 4000,
         },
-        validator=validator
+        validator=validator,
     )
 
 
@@ -92,7 +96,7 @@ def create_context(scenario: str) -> FusedContext:
             current_position=None,
             unrealized_pnl=0.0,
             account_equity=10000.0,
-            free_margin=9500.0
+            free_margin=9500.0,
         ),
         "bearish": FusedContext(
             symbol="EURUSD",
@@ -108,7 +112,7 @@ def create_context(scenario: str) -> FusedContext:
             current_position=None,
             unrealized_pnl=0.0,
             account_equity=10000.0,
-            free_margin=9500.0
+            free_margin=9500.0,
         ),
         "sideways": FusedContext(
             symbol="EURUSD",
@@ -124,7 +128,7 @@ def create_context(scenario: str) -> FusedContext:
             current_position=None,
             unrealized_pnl=0.0,
             account_equity=10000.0,
-            free_margin=9500.0
+            free_margin=9500.0,
         ),
         "high_volatility": FusedContext(
             symbol="EURUSD",
@@ -140,7 +144,7 @@ def create_context(scenario: str) -> FusedContext:
             current_position=None,
             unrealized_pnl=0.0,
             account_equity=10000.0,
-            free_margin=9500.0
+            free_margin=9500.0,
         ),
         "risk_veto": FusedContext(
             symbol="EURUSD",
@@ -156,8 +160,8 @@ def create_context(scenario: str) -> FusedContext:
             current_position="LONG 0.5 lots",  # Already in position
             unrealized_pnl=-50.0,  # Losing
             account_equity=9500.0,  # Reduced
-            free_margin=4000.0  # Low margin
-        )
+            free_margin=4000.0,  # Low margin
+        ),
     }
 
     return scenarios[scenario]
@@ -191,14 +195,17 @@ class TestMultiScenario:
         assert decision.action in ["BUY", "SELL", "HOLD"], "Should make valid decision"
         # Allow 0 confidence if validation failed
         if decision.confidence == 0.0:
-            assert "Validation failed" in decision.reasoning, "Zero confidence should indicate validation error"
+            assert "Validation failed" in decision.reasoning, (
+                "Zero confidence should indicate validation error"
+            )
         else:
             assert decision.confidence > 0.3, "Should have some confidence"
 
         # If BUY in bearish (contrarian), should have good reasoning
         if decision.action == "BUY":
-            assert "oversold" in decision.reasoning.lower() or "reversal" in decision.reasoning.lower(), \
-                "Contrarian BUY should mention oversold/reversal"
+            assert (
+                "oversold" in decision.reasoning.lower() or "reversal" in decision.reasoning.lower()
+            ), "Contrarian BUY should mention oversold/reversal"
 
         if decision.action in ["BUY", "SELL"]:
             assert decision.lots > 0, "Trade should have positive lots"
@@ -259,8 +266,10 @@ class TestMultiScenario:
             # If counter-trading (SELL when already LONG), should have small position
             if decision.action == "SELL" and "LONG" in (context.current_position or ""):
                 assert decision.lots <= 0.5, "Counter-trade should use smaller position"
-                assert "reversal" in decision.reasoning.lower() or "overbought" in decision.reasoning.lower(), \
-                    "Counter-trade should justify reversal logic"
+                assert (
+                    "reversal" in decision.reasoning.lower()
+                    or "overbought" in decision.reasoning.lower()
+                ), "Counter-trade should justify reversal logic"
 
 
 class TestConsistency:
@@ -273,11 +282,13 @@ class TestConsistency:
         decisions = []
         for i in range(3):
             decision = orchestrator.reason(context, memory)
-            decisions.append({
-                "action": decision.action,
-                "confidence": decision.confidence,
-                "lots": decision.lots
-            })
+            decisions.append(
+                {
+                    "action": decision.action,
+                    "confidence": decision.confidence,
+                    "lots": decision.lots,
+                }
+            )
 
         # Check consistency
         actions = [d["action"] for d in decisions]
@@ -313,6 +324,7 @@ class TestPerformance:
         context = create_context("bullish")
 
         import time
+
         start = time.time()
         decision = orchestrator.reason(context, memory)
         latency = time.time() - start
@@ -384,7 +396,9 @@ class TestIntegration:
 
         # Should mention key factors
         reasoning_lower = decision.reasoning.lower()
-        has_technical = any(word in reasoning_lower for word in ["rsi", "macd", "trend", "technical"])
+        has_technical = any(
+            word in reasoning_lower for word in ["rsi", "macd", "trend", "technical"]
+        )
         assert has_technical, "Reasoning should mention technical factors"
 
     def test_risk_management(self, orchestrator, memory):
@@ -399,26 +413,30 @@ class TestIntegration:
 
             # Stop loss should be reasonable distance
             sl_distance = abs(decision.stop_loss - context.price)
-            assert 0.0020 < sl_distance < 0.0100, f"Stop loss distance unreasonable: {sl_distance:.4f}"
+            assert 0.0020 < sl_distance < 0.0100, (
+                f"Stop loss distance unreasonable: {sl_distance:.4f}"
+            )
 
             # Take profit should be > stop loss (positive R:R)
             tp_distance = abs(decision.take_profit - context.price)
-            assert tp_distance > sl_distance * 0.8, "Take profit should be >= stop loss (min 0.8:1 R:R)"
+            assert tp_distance > sl_distance * 0.8, (
+                "Take profit should be >= stop loss (min 0.8:1 R:R)"
+            )
 
 
 # Summary test that runs all scenarios
 def test_comprehensive_summary(orchestrator, memory):
     """Comprehensive test summary"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("COMPREHENSIVE TEST SUMMARY")
-    print("="*70)
+    print("=" * 70)
 
     scenarios = {
         "Bullish": "bullish",
         "Bearish": "bearish",
         "Sideways": "sideways",
         "High Vol": "high_volatility",
-        "Risk Veto": "risk_veto"
+        "Risk Veto": "risk_veto",
     }
 
     results = []
@@ -427,24 +445,28 @@ def test_comprehensive_summary(orchestrator, memory):
         context = create_context(scenario)
         decision = orchestrator.reason(context, memory)
 
-        results.append({
-            "scenario": name,
-            "action": decision.action,
-            "confidence": decision.confidence,
-            "lots": decision.lots,
-            "vetoed": decision.vetoed
-        })
+        results.append(
+            {
+                "scenario": name,
+                "action": decision.action,
+                "confidence": decision.confidence,
+                "lots": decision.lots,
+                "vetoed": decision.vetoed,
+            }
+        )
 
     # Print table
     print(f"\n{'Scenario':<15} {'Action':<8} {'Confidence':<12} {'Lots':<8} {'Vetoed'}")
     print("-" * 60)
     for r in results:
-        print(f"{r['scenario']:<15} {r['action']:<8} {r['confidence']:<12.2f} {r['lots']:<8.2f} {r['vetoed']}")
+        print(
+            f"{r['scenario']:<15} {r['action']:<8} {r['confidence']:<12.2f} {r['lots']:<8.2f} {r['vetoed']}"
+        )
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print(f"Total Cost: ${orchestrator.daily_cost:.4f}")
     print(f"Total Decisions: {orchestrator.daily_decisions}")
-    print("="*70)
+    print("=" * 70)
 
     # All tests should pass
     assert len(results) == 5, "Should test all 5 scenarios"

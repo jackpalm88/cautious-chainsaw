@@ -15,20 +15,21 @@ from .adapter_base import BaseExecutionAdapter, ErrorCode, OrderRequest
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
 
 class OrderDirection(Enum):
     """Order direction types"""
+
     LONG = "LONG"
     SHORT = "SHORT"
 
 
 class ExecutionStatus(Enum):
     """Execution result status"""
+
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
     PENDING = "PENDING"
@@ -37,6 +38,7 @@ class ExecutionStatus(Enum):
 @dataclass
 class Signal:
     """Trading signal from AI agent"""
+
     symbol: str
     direction: OrderDirection
     size: float
@@ -56,6 +58,7 @@ class Signal:
 @dataclass
 class ExecutionResult:
     """Result of order execution"""
+
     success: bool
     signal_id: str
     status: ExecutionStatus
@@ -100,7 +103,7 @@ class MT5ExecutionBridge:
         adapter: BaseExecutionAdapter,
         max_spread_points: int = 30,
         deviation: int = 10,
-        magic: int = 123456
+        magic: int = 123456,
     ):
         """
         Initialize bridge with execution adapter.
@@ -173,7 +176,10 @@ class MT5ExecutionBridge:
         spread_points = (ask - bid) / symbol_info.point
 
         if spread_points > self.max_spread_points:
-            return False, f"Spread {spread_points:.1f} points exceeds maximum {self.max_spread_points}"
+            return (
+                False,
+                f"Spread {spread_points:.1f} points exceeds maximum {self.max_spread_points}",
+            )
 
         # Validate SL/TP distance
         current_price = ask if signal.direction == OrderDirection.LONG else bid
@@ -181,12 +187,18 @@ class MT5ExecutionBridge:
         if signal.stop_loss is not None:
             sl_distance_points = abs(current_price - signal.stop_loss) / symbol_info.point
             if sl_distance_points < symbol_info.min_stop_distance:
-                return False, f"Stop loss too close: {sl_distance_points:.1f} < {symbol_info.min_stop_distance} points"
+                return (
+                    False,
+                    f"Stop loss too close: {sl_distance_points:.1f} < {symbol_info.min_stop_distance} points",
+                )
 
         if signal.take_profit is not None:
             tp_distance_points = abs(current_price - signal.take_profit) / symbol_info.point
             if tp_distance_points < symbol_info.min_stop_distance:
-                return False, f"Take profit too close: {tp_distance_points:.1f} < {symbol_info.min_stop_distance} points"
+                return (
+                    False,
+                    f"Take profit too close: {tp_distance_points:.1f} < {symbol_info.min_stop_distance} points",
+                )
 
         return True, "Signal valid"
 
@@ -207,13 +219,13 @@ class MT5ExecutionBridge:
         signal_id = f"{signal.symbol}_{int(time.time() * 1000)}"
 
         # Queue signal (validation happens during execution)
-        self.order_queue.put_nowait({
-            'signal_id': signal_id,
-            'signal': signal,
-            'received_at': datetime.now()
-        })
+        self.order_queue.put_nowait(
+            {'signal_id': signal_id, 'signal': signal, 'received_at': datetime.now()}
+        )
 
-        logger.info(f"Signal {signal_id} queued: {signal.direction.value} {signal.size} {signal.symbol}")
+        logger.info(
+            f"Signal {signal_id} queued: {signal.direction.value} {signal.size} {signal.symbol}"
+        )
 
         return signal_id
 
@@ -242,7 +254,7 @@ class MT5ExecutionBridge:
                     status=ExecutionStatus.FAILED,
                     error_code=ErrorCode.INPUT_INVALID,
                     error_message=error_msg,
-                    execution_time_ms=(time.time() - start_time) * 1000
+                    execution_time_ms=(time.time() - start_time) * 1000,
                 )
 
             # Get symbol info for slippage calculation
@@ -254,7 +266,7 @@ class MT5ExecutionBridge:
                     status=ExecutionStatus.FAILED,
                     error_code=ErrorCode.SYMBOL_NOT_FOUND,
                     error_message=f"Symbol {signal.symbol} not found",
-                    execution_time_ms=(time.time() - start_time) * 1000
+                    execution_time_ms=(time.time() - start_time) * 1000,
                 )
 
             # Get price before execution for slippage calculation
@@ -266,7 +278,7 @@ class MT5ExecutionBridge:
                     status=ExecutionStatus.FAILED,
                     error_code=ErrorCode.NO_FILL,
                     error_message="Failed to get price",
-                    execution_time_ms=(time.time() - start_time) * 1000
+                    execution_time_ms=(time.time() - start_time) * 1000,
                 )
 
             bid_before, ask_before = prices_before
@@ -281,7 +293,7 @@ class MT5ExecutionBridge:
                 take_profit=signal.take_profit,
                 deviation=self.deviation,
                 comment=f"AI_{signal.confidence:.2f}",
-                magic=self.magic
+                magic=self.magic,
             )
 
             # Execute via adapter
@@ -308,12 +320,14 @@ class MT5ExecutionBridge:
                     fill_volume=order_result.fill_volume,
                     execution_time_ms=execution_time_ms,
                     slippage_pips=slippage_pips,
-                    error_code=ErrorCode.SUCCESS
+                    error_code=ErrorCode.SUCCESS,
                 )
 
                 slippage_str = f"{slippage_pips:.2f}" if slippage_pips is not None else "0.00"
-                logger.info(f"Signal {signal_id} executed: Order={order_result.order_id}, "
-                          f"Fill={order_result.fill_price}, Slippage={slippage_str} pips")
+                logger.info(
+                    f"Signal {signal_id} executed: Order={order_result.order_id}, "
+                    f"Fill={order_result.fill_price}, Slippage={slippage_str} pips"
+                )
             else:
                 exec_result = ExecutionResult(
                     success=False,
@@ -321,7 +335,7 @@ class MT5ExecutionBridge:
                     status=ExecutionStatus.FAILED,
                     execution_time_ms=execution_time_ms,
                     error_code=order_result.error_code,
-                    error_message=order_result.error_message
+                    error_message=order_result.error_message,
                 )
 
                 logger.warning(f"Signal {signal_id} failed: {order_result.error_message}")
@@ -346,7 +360,7 @@ class MT5ExecutionBridge:
                 status=ExecutionStatus.FAILED,
                 execution_time_ms=(time.time() - start_time) * 1000,
                 error_code=ErrorCode.UNHANDLED,
-                error_message=str(e)
+                error_message=str(e),
             )
 
     # ========== LAYER 3: CONFIRMATION & FEEDBACK ==========
@@ -367,7 +381,7 @@ class MT5ExecutionBridge:
                 'total_executions': 0,
                 'success_rate': 0.0,
                 'avg_execution_time_ms': 0.0,
-                'avg_slippage_pips': 0.0
+                'avg_slippage_pips': 0.0,
             }
 
         successful = [e for e in self.execution_history if e.success]
@@ -387,7 +401,7 @@ class MT5ExecutionBridge:
             'success_rate': len(successful) / len(self.execution_history) * 100,
             'avg_execution_time_ms': avg_time,
             'avg_slippage_pips': avg_slippage,
-            'p95_execution_time_ms': self._percentile(exec_times, 95) if exec_times else 0.0
+            'p95_execution_time_ms': self._percentile(exec_times, 95) if exec_times else 0.0,
         }
 
     def _percentile(self, values: list[float], percentile: int) -> float:
@@ -420,13 +434,14 @@ class MT5ExecutionBridge:
                 'profit': pos.profit,
                 'sl': pos.stop_loss,
                 'tp': pos.take_profit,
-                'time': pos.open_time
+                'time': pos.open_time,
             }
             for pos in positions
         ]
 
 
 # ========== ASYNC EXECUTION ENGINE ==========
+
 
 class AsyncExecutionEngine:
     """Async engine for background queue processing"""
@@ -467,10 +482,7 @@ class AsyncExecutionEngine:
             try:
                 # Get next order (wait max 1 second)
                 try:
-                    order_data = await asyncio.wait_for(
-                        self.bridge.order_queue.get(),
-                        timeout=1.0
-                    )
+                    order_data = await asyncio.wait_for(self.bridge.order_queue.get(), timeout=1.0)
                 except TimeoutError:
                     continue
 

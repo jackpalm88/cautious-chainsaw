@@ -16,9 +16,11 @@ from anthropic import Anthropic
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class LLMResponse:
     """Standardized LLM response format"""
+
     content: str
     raw_response: dict[str, Any]
     latency_ms: float
@@ -26,22 +28,26 @@ class LLMResponse:
     model_used: str
     confidence: float = 0.0  # Will be calculated based on response quality
 
+
 @dataclass
 class ToolCall:
     """Represents a tool call from LLM"""
+
     tool_name: str
     parameters: dict[str, Any]
     id: str
 
+
 class AnthropicLLMClient:
     """Production LLM client using Anthropic's Claude API"""
 
-    def __init__(self,
-                 api_key: str | None = None,
-                 model: str = "claude-sonnet-4-20250514",
-                 max_tokens: int = 4000,
-                 temperature: float = 0.0):
-
+    def __init__(
+        self,
+        api_key: str | None = None,
+        model: str = "claude-sonnet-4-20250514",
+        max_tokens: int = 4000,
+        temperature: float = 0.0,
+    ):
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
         if not self.api_key:
             raise ValueError("ANTHROPIC_API_KEY environment variable required")
@@ -53,10 +59,12 @@ class AnthropicLLMClient:
 
         logger.info(f"Initialized AnthropicLLMClient with model: {model}")
 
-    def complete(self,
-                 prompt: str,
-                 tools: list[dict[str, Any]] | None = None,
-                 system_prompt: str | None = None) -> LLMResponse:
+    def complete(
+        self,
+        prompt: str,
+        tools: list[dict[str, Any]] | None = None,
+        system_prompt: str | None = None,
+    ) -> LLMResponse:
         """
         Send completion request to Claude API
 
@@ -79,7 +87,7 @@ class AnthropicLLMClient:
                 "model": self.model,
                 "max_tokens": self.max_tokens,
                 "temperature": self.temperature,
-                "messages": messages
+                "messages": messages,
             }
 
             # Add system prompt if provided
@@ -106,11 +114,13 @@ class AnthropicLLMClient:
                 if content_block.type == "text":
                     content += content_block.text
                 elif content_block.type == "tool_use":
-                    tool_calls.append(ToolCall(
-                        tool_name=content_block.name,
-                        parameters=content_block.input,
-                        id=content_block.id
-                    ))
+                    tool_calls.append(
+                        ToolCall(
+                            tool_name=content_block.name,
+                            parameters=content_block.input,
+                            id=content_block.id,
+                        )
+                    )
 
             # Calculate confidence based on response characteristics
             confidence = self._calculate_confidence(response, content, tool_calls)
@@ -124,17 +134,19 @@ class AnthropicLLMClient:
                 latency_ms=latency_ms,
                 tokens_used=response.usage.input_tokens + response.usage.output_tokens,
                 model_used=response.model,
-                confidence=confidence
+                confidence=confidence,
             )
 
         except Exception as e:
             logger.error(f"Claude API error: {str(e)}")
             raise RuntimeError(f"LLM completion failed: {str(e)}") from e
 
-    def reason_with_tools(self,
-                         context: dict[str, Any],
-                         available_tools: list[dict[str, Any]],
-                         decision_type: str = "trading") -> dict[str, Any]:
+    def reason_with_tools(
+        self,
+        context: dict[str, Any],
+        available_tools: list[dict[str, Any]],
+        decision_type: str = "trading",
+    ) -> dict[str, Any]:
         """
         Enhanced reasoning with INoT multi-agent approach
         Matches the existing MockLLMClient interface
@@ -156,9 +168,7 @@ class AnthropicLLMClient:
 
         # Get LLM response
         response = self.complete(
-            prompt=user_prompt,
-            tools=available_tools,
-            system_prompt=system_prompt
+            prompt=user_prompt, tools=available_tools, system_prompt=system_prompt
         )
 
         # Parse structured response
@@ -171,7 +181,7 @@ class AnthropicLLMClient:
                 "model": response.model_used,
                 "latency_ms": response.latency_ms,
                 "tokens_used": response.tokens_used,
-                "llm_confidence": response.confidence
+                "llm_confidence": response.confidence,
             }
 
             return decision
@@ -190,8 +200,10 @@ class AnthropicLLMClient:
                 "llm_metadata": {
                     "model": response.model_used,
                     "error": str(e),
-                    "raw_content": response.content[:200] + "..." if len(response.content) > 200 else response.content
-                }
+                    "raw_content": response.content[:200] + "..."
+                    if len(response.content) > 200
+                    else response.content,
+                },
             }
 
     def _build_trading_system_prompt(self) -> str:
@@ -298,10 +310,9 @@ Response format (JSON only):
 
 Always respond with valid JSON only. No additional text outside the JSON structure."""
 
-    def _build_context_prompt(self,
-                             context: dict[str, Any],
-                             tools: list[dict[str, Any]],
-                             decision_type: str) -> str:
+    def _build_context_prompt(
+        self, context: dict[str, Any], tools: list[dict[str, Any]], decision_type: str
+    ) -> str:
         """Build user prompt with trading context"""
 
         # Extract key context elements
@@ -335,7 +346,9 @@ AVAILABLE TOOLS:
 """
 
         for tool in tools:
-            prompt += f"- {tool.get('name', 'Unknown')}: {tool.get('description', 'No description')}\n"
+            prompt += (
+                f"- {tool.get('name', 'Unknown')}: {tool.get('description', 'No description')}\n"
+            )
 
         prompt += f"""
 DECISION TYPE: {decision_type}
@@ -394,10 +407,9 @@ Respond with JSON only."""
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON response: {str(e)}") from e
 
-    def _calculate_confidence(self,
-                             response: Any,
-                             content: str,
-                             tool_calls: list[ToolCall]) -> float:
+    def _calculate_confidence(
+        self, response: Any, content: str, tool_calls: list[ToolCall]
+    ) -> float:
         """Calculate confidence based on response characteristics"""
 
         confidence = 0.5  # Base confidence
@@ -428,15 +440,18 @@ Respond with JSON only."""
 
         return min(1.0, max(0.0, confidence))
 
+
 # Configuration class for easy setup
 @dataclass
 class LLMConfig:
     """Configuration for LLM client"""
+
     api_key: str | None = None
     model: str = "claude-sonnet-4-20250514"
     max_tokens: int = 4000
     temperature: float = 0.0
     timeout_seconds: int = 30
+
 
 def create_llm_client(config: LLMConfig | None = None) -> AnthropicLLMClient:
     """Factory function to create LLM client"""
@@ -448,8 +463,9 @@ def create_llm_client(config: LLMConfig | None = None) -> AnthropicLLMClient:
         api_key=config.api_key,
         model=config.model,
         max_tokens=config.max_tokens,
-        temperature=config.temperature
+        temperature=config.temperature,
     )
+
 
 # Example usage
 if __name__ == "__main__":
@@ -474,16 +490,8 @@ if __name__ == "__main__":
     context = {
         "symbol": "EURUSD",
         "prices": [1.0950, 1.0955, 1.0960, 1.0965, 1.0970],
-        "indicators": {
-            "RSI": 65.5,
-            "MACD": 0.0012,
-            "signal": "BULLISH"
-        },
-        "account_info": {
-            "balance": 10000.0,
-            "equity": 10000.0,
-            "free_margin": 9000.0
-        }
+        "indicators": {"RSI": 65.5, "MACD": 0.0012, "signal": "BULLISH"},
+        "account_info": {"balance": 10000.0, "equity": 10000.0, "free_margin": 9000.0},
     }
 
     tools = [
@@ -494,9 +502,9 @@ if __name__ == "__main__":
                 "type": "object",
                 "properties": {
                     "prices": {"type": "array", "items": {"type": "number"}},
-                    "period": {"type": "integer", "default": 14}
-                }
-            }
+                    "period": {"type": "integer", "default": 14},
+                },
+            },
         }
     ]
 

@@ -91,7 +91,7 @@ class ToolRegistry:
                 "composite": len(self._tools_by_tier[ToolTier.COMPOSITE]),
                 "execution": len(self._tools_by_tier[ToolTier.EXECUTION]),
             },
-            "tools": []
+            "tools": [],
         }
 
         # Add all tool schemas

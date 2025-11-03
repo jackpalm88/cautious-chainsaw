@@ -29,7 +29,9 @@ class RiskFixedFractional(BaseTool):
     name = "risk_fixed_fractional"
     version = "2.0.0"
     tier = ToolTier.ATOMIC
-    description = "Calculate position size using fixed fractional risk with full multi-broker normalization"
+    description = (
+        "Calculate position size using fixed fractional risk with full multi-broker normalization"
+    )
 
     def __init__(self, normalizer: Any | None = None):
         """
@@ -42,12 +44,7 @@ class RiskFixedFractional(BaseTool):
         self.normalizer = normalizer
 
     def execute(
-        self,
-        balance: float,
-        risk_pct: float,
-        stop_loss_pips: float,
-        symbol: str,
-        **kwargs
+        self, balance: float, risk_pct: float, stop_loss_pips: float, symbol: str, **kwargs
     ) -> ToolResult:
         """
         Calculate position size.
@@ -67,10 +64,7 @@ class RiskFixedFractional(BaseTool):
         try:
             # Validate inputs
             self.validate_inputs(
-                balance=balance,
-                risk_pct=risk_pct,
-                stop_loss_pips=stop_loss_pips,
-                symbol=symbol
+                balance=balance, risk_pct=risk_pct, stop_loss_pips=stop_loss_pips, symbol=symbol
             )
 
             # Calculate risk amount
@@ -79,9 +73,7 @@ class RiskFixedFractional(BaseTool):
             # Calculate stop loss value (normalized)
             if self.normalizer:
                 # Use normalizer for accurate multi-broker calculation
-                sl_value_per_lot = self.normalizer.to_risk_units(
-                    symbol, stop_loss_pips, "pips"
-                )
+                sl_value_per_lot = self.normalizer.to_risk_units(symbol, stop_loss_pips, "pips")
             else:
                 # Simplified calculation (FX majors only)
                 sl_value_per_lot = self._simplified_sl_calculation(symbol, stop_loss_pips)
@@ -139,24 +131,17 @@ class RiskFixedFractional(BaseTool):
                 },
                 confidence=0.95,  # High confidence - deterministic calculation
                 latency_ms=round(latency_ms, 2),
-                metadata=metadata
+                metadata=metadata,
             )
 
         except Exception as e:
             latency_ms = (time.perf_counter() - start_time) * 1000
             return ToolResult(
-                value=None,
-                confidence=0.0,
-                latency_ms=round(latency_ms, 2),
-                error=str(e)
+                value=None, confidence=0.0, latency_ms=round(latency_ms, 2), error=str(e)
             )
 
     def validate_inputs(
-        self,
-        balance: float,
-        risk_pct: float,
-        stop_loss_pips: float,
-        symbol: str
+        self, balance: float, risk_pct: float, stop_loss_pips: float, symbol: str
     ) -> None:
         """Validate input parameters"""
         if balance <= 0:

@@ -53,11 +53,7 @@ class TestGenerateOrder:
     def test_tool_without_bridge(self):
         """Test tool without bridge raises error"""
         tool = GenerateOrder(bridge=None)
-        result = tool.execute(
-            symbol="EURUSD",
-            direction="LONG",
-            size=0.1
-        )
+        result = tool.execute(symbol="EURUSD", direction="LONG", size=0.1)
         assert result.value is None
         assert result.confidence == 0.0
         assert "not initialized" in result.error.lower()
@@ -71,7 +67,7 @@ class TestGenerateOrder:
             stop_loss=1.0900,
             take_profit=1.1100,
             confidence=0.85,
-            reasoning="RSI oversold + MACD bullish crossover"
+            reasoning="RSI oversold + MACD bullish crossover",
         )
 
         assert result.value is not None
@@ -85,12 +81,7 @@ class TestGenerateOrder:
 
     def test_short_order_execution(self, tool):
         """Test SHORT order execution"""
-        result = tool.execute(
-            symbol="GBPUSD",
-            direction="SHORT",
-            size=0.2,
-            confidence=0.75
-        )
+        result = tool.execute(symbol="GBPUSD", direction="SHORT", size=0.2, confidence=0.75)
 
         assert result.value is not None
         assert result.value['success'] is True
@@ -101,7 +92,7 @@ class TestGenerateOrder:
         result = tool.execute(
             symbol="EURUSD",
             direction="BUY",  # Invalid, should be LONG or SHORT
-            size=0.1
+            size=0.1,
         )
 
         assert result.value is None
@@ -113,7 +104,7 @@ class TestGenerateOrder:
         result = tool.execute(
             symbol="EURUSD",
             direction="LONG",
-            size=-0.1  # Negative size
+            size=-0.1,  # Negative size
         )
 
         assert result.value is None
@@ -126,7 +117,7 @@ class TestGenerateOrder:
             symbol="EURUSD",
             direction="LONG",
             size=0.1,
-            confidence=1.5  # Out of range
+            confidence=1.5,  # Out of range
         )
 
         assert result.value is None
@@ -135,11 +126,7 @@ class TestGenerateOrder:
 
     def test_empty_symbol(self, tool):
         """Test empty symbol"""
-        result = tool.execute(
-            symbol="",
-            direction="LONG",
-            size=0.1
-        )
+        result = tool.execute(symbol="", direction="LONG", size=0.1)
 
         assert result.value is None
         assert result.confidence == 0.0
@@ -147,12 +134,7 @@ class TestGenerateOrder:
 
     def test_metadata_completeness(self, tool):
         """Test that metadata includes all expected fields"""
-        result = tool.execute(
-            symbol="EURUSD",
-            direction="LONG",
-            size=0.1,
-            confidence=0.8
-        )
+        result = tool.execute(symbol="EURUSD", direction="LONG", size=0.1, confidence=0.8)
 
         assert result.value is not None
         assert 'signal_id' in result.metadata
@@ -197,11 +179,7 @@ class TestGenerateOrder:
 
     def test_latency_measurement(self, tool):
         """Test latency measurement"""
-        result = tool.execute(
-            symbol="EURUSD",
-            direction="LONG",
-            size=0.1
-        )
+        result = tool.execute(symbol="EURUSD", direction="LONG", size=0.1)
 
         assert result.latency_ms > 0
         # Should be reasonably fast (< 1000ms for mock)
@@ -213,12 +191,7 @@ class TestGenerateOrder:
         results = []
 
         for symbol in symbols:
-            result = tool.execute(
-                symbol=symbol,
-                direction="LONG",
-                size=0.1,
-                confidence=0.8
-            )
+            result = tool.execute(symbol=symbol, direction="LONG", size=0.1, confidence=0.8)
             results.append(result)
 
         # All should succeed

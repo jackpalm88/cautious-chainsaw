@@ -100,16 +100,13 @@ class CalcBollingerBands(BaseTool):
                     'required_samples': self.period,
                     'period': self.period,
                     'std_multiplier': self.std_multiplier,
-                }
+                },
             )
 
         except Exception as e:
             latency_ms = (time.perf_counter() - start_time) * 1000
             return ToolResult(
-                value=None,
-                confidence=0.0,
-                latency_ms=round(latency_ms, 2),
-                error=str(e)
+                value=None, confidence=0.0, latency_ms=round(latency_ms, 2), error=str(e)
             )
 
     def validate_inputs(self, prices: list[float]) -> None:
@@ -118,9 +115,7 @@ class CalcBollingerBands(BaseTool):
             raise ValueError("Prices list cannot be empty")
 
         if len(prices) < self.period:
-            raise ValueError(
-                f"Insufficient data: need {self.period} prices, got {len(prices)}"
-            )
+            raise ValueError(f"Insufficient data: need {self.period} prices, got {len(prices)}")
 
         if any(p <= 0 for p in prices):
             raise ValueError("All prices must be positive")
@@ -138,10 +133,10 @@ class CalcBollingerBands(BaseTool):
         prices_array = np.array(prices)
 
         # Calculate SMA (middle band)
-        sma = np.mean(prices_array[-self.period:])
+        sma = np.mean(prices_array[-self.period :])
 
         # Calculate standard deviation
-        std = np.std(prices_array[-self.period:])
+        std = np.std(prices_array[-self.period :])
 
         # Calculate bands
         upper_band = sma + (std * self.std_multiplier)
@@ -150,11 +145,7 @@ class CalcBollingerBands(BaseTool):
         return upper_band, sma, lower_band
 
     def _calculate_band_position(
-        self,
-        price: float,
-        upper: float,
-        middle: float,
-        lower: float
+        self, price: float, upper: float, middle: float, lower: float
     ) -> float:
         """
         Calculate price position relative to bands.
@@ -197,7 +188,7 @@ class CalcBollingerBands(BaseTool):
 
         # Data quality
         gaps = 0
-        flat_periods = sum(1 for i in range(1, len(prices)) if prices[i] == prices[i-1])
+        flat_periods = sum(1 for i in range(1, len(prices)) if prices[i] == prices[i - 1])
         data_quality = ConfidenceCalculator.data_quality(gaps, flat_periods, len(prices))
 
         # Indicator agreement (single indicator)

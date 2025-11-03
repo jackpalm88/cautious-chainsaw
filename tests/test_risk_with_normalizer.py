@@ -82,12 +82,7 @@ class TestRiskWithNormalizer:
         risk_tool = RiskFixedFractional(normalizer=normalizer)
 
         # Execute
-        result = risk_tool.execute(
-            balance=10000,
-            risk_pct=0.01,
-            stop_loss_pips=20,
-            symbol="EURUSD"
-        )
+        result = risk_tool.execute(balance=10000, risk_pct=0.01, stop_loss_pips=20, symbol="EURUSD")
 
         assert result.value is not None
         assert result.value['position_size'] > 0
@@ -118,12 +113,7 @@ class TestRiskWithNormalizer:
 
         risk_tool = RiskFixedFractional(normalizer=normalizer)
 
-        result = risk_tool.execute(
-            balance=10000,
-            risk_pct=0.01,
-            stop_loss_pips=20,
-            symbol="USDJPY"
-        )
+        result = risk_tool.execute(balance=10000, risk_pct=0.01, stop_loss_pips=20, symbol="USDJPY")
 
         assert result.value is not None
         assert result.value['position_size'] > 0
@@ -156,7 +146,7 @@ class TestRiskWithNormalizer:
             balance=10000,
             risk_pct=0.01,
             stop_loss_pips=100,  # 100 ticks for crypto
-            symbol="BTCUSDT"
+            symbol="BTCUSDT",
         )
 
         assert result.value is not None
@@ -187,18 +177,15 @@ class TestRiskWithNormalizer:
 
         risk_tool = RiskFixedFractional(normalizer=normalizer)
 
-        result = risk_tool.execute(
-            balance=10000,
-            risk_pct=0.01,
-            stop_loss_pips=20,
-            symbol="GBPUSD"
-        )
+        result = risk_tool.execute(balance=10000, risk_pct=0.01, stop_loss_pips=20, symbol="GBPUSD")
 
         assert result.value is not None
         # Position size should be rounded to 0.1 step
         # Note: Due to floating point precision, check with tolerance
         remainder = result.value['position_size'] % 0.1
-        assert remainder < 0.01 or remainder > 0.09, f"Position size {result.value['position_size']} not properly rounded to 0.1 step"
+        assert remainder < 0.01 or remainder > 0.09, (
+            f"Position size {result.value['position_size']} not properly rounded to 0.1 step"
+        )
         assert result.value['position_size'] >= 0.1  # Min size
 
     def test_min_max_lot_constraints(self):
@@ -229,7 +216,7 @@ class TestRiskWithNormalizer:
             balance=100000,  # Large balance
             risk_pct=0.05,  # 5% risk
             stop_loss_pips=10,  # Small SL
-            symbol="XAUUSD"
+            symbol="XAUUSD",
         )
 
         assert result.value is not None
@@ -240,12 +227,7 @@ class TestRiskWithNormalizer:
         """Test fallback to simplified calculation without normalizer"""
         risk_tool = RiskFixedFractional(normalizer=None)
 
-        result = risk_tool.execute(
-            balance=10000,
-            risk_pct=0.01,
-            stop_loss_pips=20,
-            symbol="EURUSD"
-        )
+        result = risk_tool.execute(balance=10000, risk_pct=0.01, stop_loss_pips=20, symbol="EURUSD")
 
         assert result.value is not None
         assert result.value['position_size'] > 0
@@ -275,12 +257,7 @@ class TestRiskWithNormalizer:
 
         risk_tool = RiskFixedFractional(normalizer=normalizer)
 
-        result = risk_tool.execute(
-            balance=10000,
-            risk_pct=0.01,
-            stop_loss_pips=20,
-            symbol="EURUSD"
-        )
+        result = risk_tool.execute(balance=10000, risk_pct=0.01, stop_loss_pips=20, symbol="EURUSD")
 
         assert result.value is not None
         assert 'calculation_method' in result.metadata

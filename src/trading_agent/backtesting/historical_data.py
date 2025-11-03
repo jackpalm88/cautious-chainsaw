@@ -34,7 +34,7 @@ class MT5DataLoader:
         symbol: str,
         timeframe: str,
         date_format: str = "%Y.%m.%d",
-        time_format: str = "%H:%M"
+        time_format: str = "%H:%M",
     ) -> list[BacktestBar]:
         """
         Load MT5 CSV export file.
@@ -63,8 +63,7 @@ class MT5DataLoader:
 
         # Parse timestamps
         df["Timestamp"] = pd.to_datetime(
-            df["Date"] + " " + df["Time"],
-            format=f"{date_format} {time_format}"
+            df["Date"] + " " + df["Time"], format=f"{date_format} {time_format}"
         )
 
         # Estimate spread if not provided
@@ -83,7 +82,7 @@ class MT5DataLoader:
                 low=float(row["Low"]),
                 close=float(row["Close"]),
                 volume=float(row["Volume"]),
-                spread=float(row.get("Spread", self.default_spread_pips))
+                spread=float(row.get("Spread", self.default_spread_pips)),
             )
             bars.append(bar)
 
@@ -95,7 +94,7 @@ class MT5DataLoader:
         bars: list[BacktestBar],
         remove_gaps: bool = True,
         remove_outliers: bool = True,
-        max_gap_hours: int = 24
+        max_gap_hours: int = 24,
     ) -> list[BacktestBar]:
         """
         Clean and validate historical data.
@@ -132,7 +131,7 @@ class MT5DataLoader:
             if prev_bar and remove_outliers:
                 price_change = abs(bar.close - prev_bar.close) / prev_bar.close
                 if price_change > 0.05:  # 5% move
-                    print(f"⚠️  Outlier detected: {price_change*100:.1f}% move at {bar.timestamp}")
+                    print(f"⚠️  Outlier detected: {price_change * 100:.1f}% move at {bar.timestamp}")
                     # Optionally skip or adjust
 
             cleaned.append(bar)
@@ -157,9 +156,7 @@ class MT5DataLoader:
         return True
 
     def resample_timeframe(
-        self,
-        bars: list[BacktestBar],
-        target_timeframe: str
+        self, bars: list[BacktestBar], target_timeframe: str
     ) -> list[BacktestBar]:
         """
         Resample bars to a different timeframe.
@@ -175,44 +172,45 @@ class MT5DataLoader:
             return []
 
         # Convert to pandas for easy resampling
-        df = pd.DataFrame([
-            {
-                "timestamp": b.timestamp,
-                "open": b.open,
-                "high": b.high,
-                "low": b.low,
-                "close": b.close,
-                "volume": b.volume,
-                "spread": b.spread
-            }
-            for b in bars
-        ])
+        df = pd.DataFrame(
+            [
+                {
+                    "timestamp": b.timestamp,
+                    "open": b.open,
+                    "high": b.high,
+                    "low": b.low,
+                    "close": b.close,
+                    "volume": b.volume,
+                    "spread": b.spread,
+                }
+                for b in bars
+            ]
+        )
 
         df.set_index("timestamp", inplace=True)
 
         # Map timeframe to pandas frequency
-        freq_map = {
-            "M5": "5T",
-            "M15": "15T",
-            "M30": "30T",
-            "H1": "1H",
-            "H4": "4H",
-            "D1": "1D"
-        }
+        freq_map = {"M5": "5T", "M15": "15T", "M30": "30T", "H1": "1H", "H4": "4H", "D1": "1D"}
 
         freq = freq_map.get(target_timeframe)
         if not freq:
             raise ValueError(f"Unsupported timeframe: {target_timeframe}")
 
         # Resample
-        resampled = df.resample(freq).agg({
-            "open": "first",
-            "high": "max",
-            "low": "min",
-            "close": "last",
-            "volume": "sum",
-            "spread": "mean"
-        }).dropna()
+        resampled = (
+            df.resample(freq)
+            .agg(
+                {
+                    "open": "first",
+                    "high": "max",
+                    "low": "min",
+                    "close": "last",
+                    "volume": "sum",
+                    "spread": "mean",
+                }
+            )
+            .dropna()
+        )
 
         # Convert back to BacktestBar
         resampled_bars = []
@@ -226,7 +224,7 @@ class MT5DataLoader:
                 low=row["low"],
                 close=row["close"],
                 volume=row["volume"],
-                spread=row["spread"]
+                spread=row["spread"],
             )
             resampled_bars.append(bar)
 
@@ -234,9 +232,7 @@ class MT5DataLoader:
         return resampled_bars
 
     def split_train_test(
-        self,
-        bars: list[BacktestBar],
-        train_ratio: float = 0.7
+        self, bars: list[BacktestBar], train_ratio: float = 0.7
     ) -> tuple[list[BacktestBar], list[BacktestBar]]:
         """
         Split data into training and testing sets.
@@ -262,7 +258,7 @@ class MT5DataLoader:
         num_bars: int = 10000,
         initial_price: float = 1.0950,
         volatility: float = 0.0002,
-        trend: float = 0.00001
+        trend: float = 0.00001,
     ) -> list[BacktestBar]:
         """
         Generate realistic mock data using Geometric Brownian Motion.
@@ -315,32 +311,30 @@ class MT5DataLoader:
                 low=low_price,
                 close=close_price,
                 volume=np.random.randint(50, 200),
-                spread=np.random.uniform(0.8, 2.0)
+                spread=np.random.uniform(0.8, 2.0),
             )
             bars.append(bar)
 
         print(f"🎲 Generated {len(bars)} mock bars for {symbol}")
         return bars
 
-    def export_to_csv(
-        self,
-        bars: list[BacktestBar],
-        filepath: str
-    ) -> None:
+    def export_to_csv(self, bars: list[BacktestBar], filepath: str) -> None:
         """Export bars to CSV format."""
-        df = pd.DataFrame([
-            {
-                "Date": b.timestamp.strftime("%Y.%m.%d"),
-                "Time": b.timestamp.strftime("%H:%M"),
-                "Open": b.open,
-                "High": b.high,
-                "Low": b.low,
-                "Close": b.close,
-                "Volume": b.volume,
-                "Spread": b.spread
-            }
-            for b in bars
-        ])
+        df = pd.DataFrame(
+            [
+                {
+                    "Date": b.timestamp.strftime("%Y.%m.%d"),
+                    "Time": b.timestamp.strftime("%H:%M"),
+                    "Open": b.open,
+                    "High": b.high,
+                    "Low": b.low,
+                    "Close": b.close,
+                    "Volume": b.volume,
+                    "Spread": b.spread,
+                }
+                for b in bars
+            ]
+        )
 
         df.to_csv(filepath, index=False)
         print(f"💾 Exported {len(bars)} bars to {filepath}")

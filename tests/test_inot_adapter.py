@@ -29,7 +29,7 @@ class TestSimpleResponse:
             content='{"test": "data"}',
             latency_ms=100.5,
             tokens_used=150,
-            model_used="claude-sonnet-4"
+            model_used="claude-sonnet-4",
         )
 
         assert response.content == '{"test": "data"}'
@@ -82,7 +82,7 @@ class TestINoTLLMAdapter:
             latency_ms=150.5,
             tokens_used=200,
             model_used="claude-sonnet-4",
-            confidence=0.85
+            confidence=0.85,
         )
         mock_anthropic_client.complete.return_value = mock_response
 
@@ -98,9 +98,7 @@ class TestINoTLLMAdapter:
 
         # Verify client was called correctly
         mock_anthropic_client.complete.assert_called_once_with(
-            prompt="Test prompt",
-            tools=None,
-            system_prompt=None
+            prompt="Test prompt", tools=None, system_prompt=None
         )
 
     def test_complete_with_parameters(self, adapter, mock_anthropic_client):
@@ -117,17 +115,14 @@ class TestINoTLLMAdapter:
                 raw_response={},
                 latency_ms=100.0,
                 tokens_used=50,
-                model_used="claude-sonnet-4"
+                model_used="claude-sonnet-4",
             )
 
         mock_anthropic_client.complete.side_effect = capture_params
 
         # Call with custom parameters
         result = adapter.complete(
-            prompt="Test",
-            model="claude-opus-4",
-            temperature=0.5,
-            max_tokens=2000
+            prompt="Test", model="claude-opus-4", temperature=0.5, max_tokens=2000
         )
 
         # Verify parameters were set during call
@@ -145,17 +140,12 @@ class TestINoTLLMAdapter:
             raw_response={},
             latency_ms=100.0,
             tokens_used=50,
-            model_used="claude-sonnet-4"
+            model_used="claude-sonnet-4",
         )
         mock_anthropic_client.complete.return_value = mock_response
 
         # Call with custom parameters
-        adapter.complete(
-            prompt="Test",
-            model="claude-opus-4",
-            temperature=0.7,
-            max_tokens=1000
-        )
+        adapter.complete(prompt="Test", model="claude-opus-4", temperature=0.7, max_tokens=1000)
 
         # Verify settings were restored
         assert mock_anthropic_client.model == "claude-sonnet-4-20250514"
@@ -169,11 +159,7 @@ class TestINoTLLMAdapter:
 
         # Call should raise error
         with pytest.raises(RuntimeError, match="API error"):
-            adapter.complete(
-                prompt="Test",
-                model="claude-opus-4",
-                temperature=0.5
-            )
+            adapter.complete(prompt="Test", model="claude-opus-4", temperature=0.5)
 
         # Verify settings were still restored
         assert mock_anthropic_client.model == "claude-sonnet-4-20250514"
@@ -221,10 +207,7 @@ class TestCreateINoTAdapter:
 
         # Verify client was created with defaults
         mock_client_class.assert_called_once_with(
-            api_key=None,
-            model="claude-sonnet-4-20250514",
-            max_tokens=4000,
-            temperature=0.0
+            api_key=None, model="claude-sonnet-4-20250514", max_tokens=4000, temperature=0.0
         )
 
         # Verify adapter wraps client
@@ -239,18 +222,12 @@ class TestCreateINoTAdapter:
 
         # Create with custom params
         adapter = create_inot_adapter(
-            api_key="test-key",
-            model="claude-opus-4",
-            max_tokens=2000,
-            temperature=0.5
+            api_key="test-key", model="claude-opus-4", max_tokens=2000, temperature=0.5
         )
 
         # Verify
         mock_client_class.assert_called_once_with(
-            api_key="test-key",
-            model="claude-opus-4",
-            max_tokens=2000,
-            temperature=0.5
+            api_key="test-key", model="claude-opus-4", max_tokens=2000, temperature=0.5
         )
         assert isinstance(adapter, INoTLLMAdapter)
 
@@ -276,7 +253,7 @@ class TestIntegrationWithRealClient:
                 api_key="test-key",
                 model="claude-sonnet-4-20250514",
                 max_tokens=4000,
-                temperature=0.0
+                temperature=0.0,
             )
 
             yield client, mock_anthropic
@@ -306,10 +283,7 @@ class TestIntegrationWithRealClient:
 
         # Call with overrides
         result = adapter.complete(
-            prompt="Test",
-            model="claude-opus-4",
-            temperature=0.7,
-            max_tokens=2000
+            prompt="Test", model="claude-opus-4", temperature=0.7, max_tokens=2000
         )
 
         # Verify API call used overridden parameters

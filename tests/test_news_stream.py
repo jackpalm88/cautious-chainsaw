@@ -47,9 +47,7 @@ class TestNewsNormalizer:
             "source": "Bloomberg",
             "url": "https://example.com",
             "time_published": "20250101T100000",
-            "ticker_sentiment": [
-                {"ticker": "EUR", "ticker_sentiment_score": "0.5"}
-            ],
+            "ticker_sentiment": [{"ticker": "EUR", "ticker_sentiment_score": "0.5"}],
         }
 
         normalized = normalizer.normalize_alphavantage(raw_news)
@@ -118,9 +116,7 @@ class TestSymbolRelevanceScorer:
             news_items.append(normalizer.normalize_newsapi(raw))
 
         # Filter for EURUSD
-        results = scorer.filter_relevant_news(
-            news_items, ["EURUSD"], threshold=0.3
-        )
+        results = scorer.filter_relevant_news(news_items, ["EURUSD"], threshold=0.3)
 
         assert "EURUSD" in results
         assert len(results["EURUSD"]) > 0  # Should have at least ECB news
@@ -239,9 +235,7 @@ class TestNewsStream:
 
     async def test_fetch_mock_news(self):
         """Test fetching mock news"""
-        stream = NewsStream(
-            symbols=["EURUSD"], mode="mock", fetch_interval_s=1
-        )
+        stream = NewsStream(symbols=["EURUSD"], mode="mock", fetch_interval_s=1)
 
         await stream.connect()
         await stream.start()

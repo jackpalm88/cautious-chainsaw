@@ -27,6 +27,7 @@ class FusedContext:
     Unified market context for decision-making.
     Combines technical indicators, market data, and risk parameters.
     """
+
     # Symbol and price
     symbol: str
     price: float
@@ -88,6 +89,7 @@ class MemorySnapshot:
     Read-only memory snapshot for INoT reasoning.
     Contains recent decisions and performance stats.
     """
+
     recent_decisions: list[dict] = field(default_factory=list)
     current_regime: str | None = None
     win_rate_30d: float | None = None
@@ -111,10 +113,24 @@ class MemorySnapshot:
 
         lines.append(f"\n## Current Regime: {self.current_regime or 'unknown'}")
         lines.append("\n## 30-Day Stats")
-        lines.append(f"- Win rate: {self.win_rate_30d * 100:.1f}%" if self.win_rate_30d else "- Win rate: N/A")
-        lines.append(f"- Avg win: {self.avg_win_pips:.1f} pips" if self.avg_win_pips else "- Avg win: N/A")
-        lines.append(f"- Avg loss: {self.avg_loss_pips:.1f} pips" if self.avg_loss_pips else "- Avg loss: N/A")
-        lines.append(f"- Total trades: {self.total_trades_30d}" if self.total_trades_30d else "- Total trades: N/A")
+        lines.append(
+            f"- Win rate: {self.win_rate_30d * 100:.1f}%"
+            if self.win_rate_30d
+            else "- Win rate: N/A"
+        )
+        lines.append(
+            f"- Avg win: {self.avg_win_pips:.1f} pips" if self.avg_win_pips else "- Avg win: N/A"
+        )
+        lines.append(
+            f"- Avg loss: {self.avg_loss_pips:.1f} pips"
+            if self.avg_loss_pips
+            else "- Avg loss: N/A"
+        )
+        lines.append(
+            f"- Total trades: {self.total_trades_30d}"
+            if self.total_trades_30d
+            else "- Total trades: N/A"
+        )
 
         return "\n".join(lines)
 
@@ -166,11 +182,10 @@ class TradingDecisionEngine:
         self.macd_tool = CalcMACD(
             fast_period=tools_config.get("macd_fast", 12),
             slow_period=tools_config.get("macd_slow", 26),
-            signal_period=tools_config.get("macd_signal", 9)
+            signal_period=tools_config.get("macd_signal", 9),
         )
         self.bb_tool = CalcBollingerBands(
-            period=tools_config.get("bb_period", 20),
-            std_multiplier=tools_config.get("bb_std", 2.0)
+            period=tools_config.get("bb_period", 20), std_multiplier=tools_config.get("bb_std", 2.0)
         )
         self.risk_tool = RiskFixedFractional()
 
@@ -185,18 +200,16 @@ class TradingDecisionEngine:
     def _init_inot(self, inot_config: dict):
         """Initialize INoT components"""
         # Validator
-        schema_path = Path(__file__).parent.parent / "inot_engine" / "schemas" / "inot_agents.schema.json"
+        schema_path = (
+            Path(__file__).parent.parent / "inot_engine" / "schemas" / "inot_agents.schema.json"
+        )
         validator = INoTValidator(schema_path=schema_path)
 
         # LLM client (mock for now, replace with real client)
         llm_client = self._create_mock_llm_client()
 
         # Orchestrator
-        self.inot = INoTOrchestrator(
-            llm_client=llm_client,
-            config=inot_config,
-            validator=validator
-        )
+        self.inot = INoTOrchestrator(llm_client=llm_client, config=inot_config, validator=validator)
 
         # Calibrator
         calibration_path = Path(inot_config.get("calibration_path", "data/inot_calibration.json"))
@@ -207,9 +220,11 @@ class TradingDecisionEngine:
 
     def _create_mock_llm_client(self):
         """Create mock LLM client for testing"""
+
         class MockLLM:
             def complete(self, prompt, **kwargs):
                 """Mock LLM completion"""
+
                 class Response:
                     content = """[
   {
@@ -280,29 +295,24 @@ class TradingDecisionEngine:
             symbol=symbol,
             price=prices[-1],
             timestamp=datetime.now(),
-
             # RSI
             rsi=rsi_result.value.get('rsi') if rsi_result.value else None,
             rsi_signal=rsi_result.value.get('signal') if rsi_result.value else None,
-
             # MACD
             macd=macd_result.value.get('macd') if macd_result.value else None,
             macd_signal_line=macd_result.value.get('signal_line') if macd_result.value else None,
             macd_histogram=macd_result.value.get('histogram') if macd_result.value else None,
             macd_signal=macd_result.value.get('signal') if macd_result.value else None,
-
             # Bollinger Bands
             bb_upper=bb_result.value.get('upper_band') if bb_result.value else None,
             bb_middle=bb_result.value.get('middle_band') if bb_result.value else None,
             bb_lower=bb_result.value.get('lower_band') if bb_result.value else None,
             bb_position=bb_result.value.get('position') if bb_result.value else None,
             bb_signal=bb_result.value.get('signal') if bb_result.value else None,
-
             # Technical overview
             technical_signal=tech_result.value.get('signal') if tech_result.value else None,
             technical_confidence=tech_result.confidence,
             agreement_score=tech_result.value.get('agreement_score') if tech_result.value else None,
-
             # Placeholder values (to be filled by real data)
             atr=0.0015,
             volume=1000,
@@ -329,9 +339,7 @@ class TradingDecisionEngine:
 
                 # Apply calibration
                 if self.calibrator:
-                    decision.confidence = self.calibrator.apply_calibration(
-                        decision.confidence
-                    )
+                    decision.confidence = self.calibrator.apply_calibration(decision.confidence)
 
                 print(f"🧠 INoT decision: {decision.action} (conf: {decision.confidence:.2f})")
                 return decision
@@ -354,22 +362,13 @@ class TradingDecisionEngine:
         # Simple RSI-based rule
         if context.rsi and context.rsi < 30:
             return Decision(
-                action="BUY",
-                lots=0.01,
-                confidence=0.5,
-                reasoning="RSI oversold (fallback rule)"
+                action="BUY", lots=0.01, confidence=0.5, reasoning="RSI oversold (fallback rule)"
             )
         elif context.rsi and context.rsi > 70:
             return Decision(
-                action="SELL",
-                lots=0.01,
-                confidence=0.5,
-                reasoning="RSI overbought (fallback rule)"
+                action="SELL", lots=0.01, confidence=0.5, reasoning="RSI overbought (fallback rule)"
             )
         else:
             return Decision(
-                action="HOLD",
-                lots=0.0,
-                confidence=0.3,
-                reasoning="No clear signal (fallback rule)"
+                action="HOLD", lots=0.0, confidence=0.3, reasoning="No clear signal (fallback rule)"
             )

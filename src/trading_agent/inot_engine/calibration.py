@@ -21,6 +21,7 @@ from sklearn.linear_model import LogisticRegression
 @dataclass
 class CalibrationSample:
     """Single decision for calibration analysis"""
+
     timestamp: datetime
     predicted_confidence: float  # What INoT said (0-1)
     actual_outcome: bool  # True=win, False=loss
@@ -54,12 +55,7 @@ class ConfidenceCalibrator:
         # Load existing samples
         self._load_samples()
 
-    def record_decision(
-        self,
-        timestamp: datetime,
-        predicted_confidence: float,
-        action: str
-    ) -> str:
+    def record_decision(self, timestamp: datetime, predicted_confidence: float, action: str) -> str:
         """
         Record new decision (outcome unknown yet).
         Returns tracking ID for later outcome update.
@@ -69,7 +65,7 @@ class ConfidenceCalibrator:
             predicted_confidence=predicted_confidence,
             actual_outcome=None,  # Filled in later
             action=action,
-            pnl=None
+            pnl=None,
         )
 
         self.samples.append(sample)
@@ -78,22 +74,18 @@ class ConfidenceCalibrator:
         # Return ID for tracking
         return f"{timestamp.isoformat()}_{action}"
 
-    def update_outcome(
-        self,
-        tracking_id: str,
-        actual_outcome: bool,
-        pnl: float
-    ):
+    def update_outcome(self, tracking_id: str, actual_outcome: bool, pnl: float):
         """Update sample with actual outcome when position closes"""
         # Find sample by tracking ID
         timestamp_str, action = tracking_id.rsplit("_", 1)
         timestamp = datetime.fromisoformat(timestamp_str)
 
         for sample in self.samples:
-            if (sample.timestamp == timestamp and
-                sample.action == action and
-                sample.actual_outcome is None):
-
+            if (
+                sample.timestamp == timestamp
+                and sample.action == action
+                and sample.actual_outcome is None
+            ):
                 sample.actual_outcome = actual_outcome
                 sample.pnl = pnl
                 break
@@ -117,7 +109,7 @@ class ConfidenceCalibrator:
             return {
                 "status": "insufficient_data",
                 "sample_count": len(completed),
-                "message": f"Need {self.min_samples_for_calibration - len(completed)} more samples"
+                "message": f"Need {self.min_samples_for_calibration - len(completed)} more samples",
             }
 
         # Extract arrays
@@ -147,7 +139,7 @@ class ConfidenceCalibrator:
             "brier_score": brier,
             "deciles": deciles,
             "needs_calibration": needs_calibration,
-            "calibration_threshold": self.calibration_tolerance
+            "calibration_threshold": self.calibration_tolerance,
         }
 
     def calibrate(self, method: str = "isotonic") -> dict:
@@ -165,7 +157,7 @@ class ConfidenceCalibrator:
         if len(completed) < self.min_samples_for_calibration:
             return {
                 "status": "insufficient_data",
-                "message": f"Need {self.min_samples_for_calibration} samples, have {len(completed)}"
+                "message": f"Need {self.min_samples_for_calibration} samples, have {len(completed)}",
             }
 
         # Prepare data
@@ -199,7 +191,7 @@ class ConfidenceCalibrator:
             "ece_before": ece_before,
             "ece_after": ece_after,
             "improvement": improvement,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def apply_calibration(self, raw_confidence: float) -> float:
@@ -223,10 +215,7 @@ class ConfidenceCalibrator:
             return raw_confidence
 
     def _compute_ece(
-        self,
-        confidences: np.ndarray,
-        outcomes: np.ndarray,
-        n_bins: int = 10
+        self, confidences: np.ndarray, outcomes: np.ndarray, n_bins: int = 10
     ) -> float:
         """
         Compute Expected Calibration Error.
@@ -242,8 +231,7 @@ class ConfidenceCalibrator:
 
         for i in range(n_bins):
             # Find samples in this confidence bin
-            in_bin = (confidences >= bin_boundaries[i]) & \
-                     (confidences < bin_boundaries[i + 1])
+            in_bin = (confidences >= bin_boundaries[i]) & (confidences < bin_boundaries[i + 1])
 
             if np.sum(in_bin) == 0:
                 continue
@@ -259,9 +247,7 @@ class ConfidenceCalibrator:
         return ece
 
     def _compute_decile_calibration(
-        self,
-        confidences: np.ndarray,
-        outcomes: np.ndarray
+        self, confidences: np.ndarray, outcomes: np.ndarray
     ) -> list[dict]:
         """
         Compute calibration metrics per confidence decile.
@@ -279,16 +265,18 @@ class ConfidenceCalibrator:
             if np.sum(in_decile) == 0:
                 continue
 
-            deciles.append({
-                "decile": i + 1,
-                "confidence_range": (lower, upper),
-                "avg_confidence": confidences[in_decile].mean(),
-                "actual_accuracy": outcomes[in_decile].mean(),
-                "sample_count": int(np.sum(in_decile)),
-                "calibration_error": abs(
-                    confidences[in_decile].mean() - outcomes[in_decile].mean()
-                )
-            })
+            deciles.append(
+                {
+                    "decile": i + 1,
+                    "confidence_range": (lower, upper),
+                    "avg_confidence": confidences[in_decile].mean(),
+                    "actual_accuracy": outcomes[in_decile].mean(),
+                    "sample_count": int(np.sum(in_decile)),
+                    "calibration_error": abs(
+                        confidences[in_decile].mean() - outcomes[in_decile].mean()
+                    ),
+                }
+            )
 
         return deciles
 
@@ -301,13 +289,15 @@ class ConfidenceCalibrator:
             data = json.load(f)
 
             for item in data:
-                self.samples.append(CalibrationSample(
-                    timestamp=datetime.fromisoformat(item["timestamp"]),
-                    predicted_confidence=item["predicted_confidence"],
-                    actual_outcome=item.get("actual_outcome"),
-                    action=item["action"],
-                    pnl=item.get("pnl")
-                ))
+                self.samples.append(
+                    CalibrationSample(
+                        timestamp=datetime.fromisoformat(item["timestamp"]),
+                        predicted_confidence=item["predicted_confidence"],
+                        actual_outcome=item.get("actual_outcome"),
+                        action=item["action"],
+                        pnl=item.get("pnl"),
+                    )
+                )
 
     def _save_samples(self):
         """Save calibration samples to disk"""
@@ -315,13 +305,15 @@ class ConfidenceCalibrator:
 
         data = []
         for sample in self.samples:
-            data.append({
-                "timestamp": sample.timestamp.isoformat(),
-                "predicted_confidence": sample.predicted_confidence,
-                "actual_outcome": sample.actual_outcome,
-                "action": sample.action,
-                "pnl": sample.pnl
-            })
+            data.append(
+                {
+                    "timestamp": sample.timestamp.isoformat(),
+                    "predicted_confidence": sample.predicted_confidence,
+                    "actual_outcome": sample.actual_outcome,
+                    "action": sample.action,
+                    "pnl": sample.pnl,
+                }
+            )
 
         with open(self.storage_path, 'w') as f:
             json.dump(data, f, indent=2)
@@ -392,14 +384,14 @@ if __name__ == "__main__":
         tracking_id = calibrator.record_decision(
             timestamp=datetime.now() - timedelta(days=150 - i),
             predicted_confidence=raw_conf,
-            action="BUY"
+            action="BUY",
         )
 
         # Update outcome
         calibrator.update_outcome(
             tracking_id=tracking_id,
             actual_outcome=actual_outcome,
-            pnl=10.0 if actual_outcome else -10.0
+            pnl=10.0 if actual_outcome else -10.0,
         )
 
     # Run calibration job
