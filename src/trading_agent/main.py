@@ -1,24 +1,26 @@
 import asyncio
 import logging
-import yaml
 import os
 import time
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any
+
+import yaml
+
+from Memory import SQLiteMemoryStore, StoredDecision
+from trading_agent.adapters.adapter_mock import MockAdapter
+from trading_agent.adapters.bridge import MT5ExecutionBridge as ExecutionBridge
 
 # Import all completed modules
 from trading_agent.input_fusion.engine import InputFusionEngine
-from trading_agent.inot_engine.orchestrator import INoTOrchestrator
-from trading_agent.strategies.selector import StrategySelector
-from trading_agent.strategies.compiler import StrategyCompiler
-from trading_agent.strategies.registry import StrategyRegistry
-from trading_agent.adapters.bridge import MT5ExecutionBridge as ExecutionBridge
-from trading_agent.adapters.adapter_mock import MockAdapter
+
 # from trading_agent.adapters.adapter_mt5 import MT5Adapter
 from trading_agent.resilience.circuit_breaker import CircuitBreaker, CircuitBreakerConfig
 from trading_agent.resilience.health_monitor import HealthMonitor, ServiceHealth, ServiceStatus
-from trading_agent.tools import MarketContext
-from Memory import SQLiteMemoryStore, StoredDecision
+from trading_agent.strategies.compiler import StrategyCompiler
+from trading_agent.strategies.registry import StrategyRegistry
+from trading_agent.strategies.selector import StrategySelector
+
 # Note: Assuming StoredDecision and TradeOutcome are defined in Memory module or accessible
 
 # Configure logging
@@ -33,10 +35,10 @@ class TradingAgent:
         self.running = False
         self._initialize_components()
 
-    def _load_config(self, path: str) -> Dict[str, Any]:
+    def _load_config(self, path: str) -> dict[str, Any]:
         """Load configuration from file."""
         try:
-            with open(path, 'r') as f:
+            with open(path) as f:
                 config = yaml.safe_load(f)
 
             # Simple environment variable substitution (for demonstration)
@@ -167,7 +169,7 @@ class TradingAgent:
                 logger.error(f"Error in trading loop: {e}")
                 await self._handle_error(e)
 
-    async def _collect_market_data(self) -> Optional[Dict[str, Any]]:
+    async def _collect_market_data(self) -> dict[str, Any] | None:
         """Collect data from all sources."""
         try:
             # Get price data (Mocked for E2E test)
@@ -191,7 +193,7 @@ class TradingAgent:
             logger.error(f"Failed to collect market data: {e}")
             return None
 
-    async def _analyze_market(self, market_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_market(self, market_data: dict[str, Any]) -> dict[str, Any]:
         """Analyze market with INoT engine."""
         # Mocking INoT analysis for E2E test
         analysis = {
@@ -208,7 +210,7 @@ class TradingAgent:
         # )
         return analysis
 
-    def _select_strategy(self, analysis: Dict[str, Any]) -> Any:
+    def _select_strategy(self, analysis: dict[str, Any]) -> Any:
         """Select best strategy based on analysis."""
         # Mocking strategy selection
         class MockStrategy:
@@ -223,7 +225,7 @@ class TradingAgent:
 
         return MockStrategy()
 
-    def _make_decision(self, analysis: Dict[str, Any], strategy: Any) -> StoredDecision:
+    def _make_decision(self, analysis: dict[str, Any], strategy: Any) -> StoredDecision:
         """Generate trading decision."""
         signal = strategy.generate_signal(analysis)
 
