@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useFusionStore } from '../stores/fusionStore';
+import { useDecisionStore } from '../stores/decisionStore';
 import PriceChartPanel from '../components/LiveDashboard/PriceChartPanel';
 import SentimentPanel from '../components/LiveDashboard/SentimentPanel';
 import EconomicEventsPanel from '../components/LiveDashboard/EconomicEventsPanel';
@@ -12,11 +13,15 @@ export default function LiveDashboard() {
   const connect = useFusionStore((state) => state.connect);
   const disconnect = useFusionStore((state) => state.disconnect);
   const connectionStatus = useFusionStore((state) => state.connectionStatus);
+  const hydrateDecisions = useDecisionStore((state) => state.hydrate);
 
   useEffect(() => {
     connect('EURUSD');
+    hydrateDecisions().catch((error) => {
+      console.error('Failed to hydrate decisions', error);
+    });
     return () => disconnect();
-  }, [connect, disconnect]);
+  }, [connect, disconnect, hydrateDecisions]);
 
   return (
     <div className="space-y-6">
