@@ -1,0 +1,5 @@
+# Prevent Vercel from installing heavyweight Python dependencies from the monorepo configuration.
+pyproject.toml
+poetry.lock
+Pipfile
+Pipfile.lock

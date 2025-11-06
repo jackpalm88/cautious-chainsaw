@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
-import socketio
+from typing import TYPE_CHECKING
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend import routes
 from backend.config import get_settings
-from backend.routes import backtests, decisions, health, strategies
 from backend.services import get_decision_service
 from backend.services.fusion_service import FusionSocketService
+
+if TYPE_CHECKING:
+    import socketio
 
 
 def create_api_app() -> FastAPI:
@@ -25,15 +29,21 @@ def create_api_app() -> FastAPI:
     )
 
     api_prefix = settings.api_prefix
-    app.include_router(health.router, prefix="")
-    app.include_router(strategies.router, prefix=api_prefix)
-    app.include_router(backtests.router, prefix=api_prefix)
-    app.include_router(decisions.router, prefix=api_prefix)
+    app.include_router(routes.health.router, prefix="")
+    app.include_router(routes.strategies.router, prefix=api_prefix)
+    app.include_router(routes.backtests.router, prefix=api_prefix)
+    app.include_router(routes.decisions.router, prefix=api_prefix)
     return app
 
 
 def create_app() -> socketio.ASGIApp:
-    """Create ASGI application exposing both HTTP API and Socket.IO."""
+    """Create ASGI application exposing both HTTP API and Socket.IO.
+
+    Lazy-import ``socketio`` so REST-only deployments (e.g. Vercel /api)
+    do not require ``python-socketio`` to be installed.
+    """
+
+    import socketio  # defer import until required
 
     settings = get_settings()
     api_app = create_api_app()
