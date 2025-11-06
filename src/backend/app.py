@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import get_settings
 from backend.routes import backtests, chat, decisions, health, strategies
+from backend.routes import backtests, decisions, health, strategies
 from backend.services import get_decision_service
 from backend.services.fusion_service import FusionSocketService
 

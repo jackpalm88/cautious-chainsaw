@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api, BacktestRunResponse, StrategySummary, DataSource } from '../lib/api';
+import { api, BacktestRunResponse, StrategySummary } from '../lib/api';
 
 type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -17,6 +18,10 @@ interface BacktestStore {
   runStatus: AsyncStatus;
   runError: string | null;
   runNotice: string | null;
+  selectedStrategy: string | null;
+  result: BacktestResult | null;
+  runStatus: AsyncStatus;
+  runError: string | null;
   loadStrategies: () => Promise<void>;
   selectStrategy: (strategyId: string) => void;
   runBacktest: () => Promise<void>;
@@ -41,6 +46,10 @@ export const useBacktestStore = create<BacktestStore>((set, get) => ({
   runStatus: 'idle',
   runError: null,
   runNotice: null,
+  selectedStrategy: null,
+  result: null,
+  runStatus: 'idle',
+  runError: null,
   loadStrategies: async () => {
     if (get().strategiesStatus === 'loading') return;
     set({ strategiesStatus: 'loading', strategiesError: null });
@@ -64,6 +73,14 @@ export const useBacktestStore = create<BacktestStore>((set, get) => ({
         strategiesNotice: null,
         strategiesSource: null
       });
+      const strategies = await api.listStrategies();
+      set({
+        strategies,
+        strategiesStatus: 'success',
+        selectedStrategy: get().selectedStrategy ?? strategies[0]?.id ?? null
+      });
+    } catch (error) {
+      set({ strategiesStatus: 'error', strategiesError: withErrorMessage(error) });
     }
   },
   selectStrategy: (strategyId: string) => {
@@ -90,6 +107,12 @@ export const useBacktestStore = create<BacktestStore>((set, get) => ({
       });
     } catch (error) {
       set({ runStatus: 'error', runError: withErrorMessage(error), runNotice: null });
+    set({ runStatus: 'loading', runError: null });
+    try {
+      const response = await api.runBacktest({ strategyId: selectedStrategy, symbol: 'EURUSD' });
+      set({ result: response, runStatus: 'success' });
+    } catch (error) {
+      set({ runStatus: 'error', runError: withErrorMessage(error) });
     }
   }
 }));

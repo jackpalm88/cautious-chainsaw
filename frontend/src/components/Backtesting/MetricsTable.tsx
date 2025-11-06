@@ -8,6 +8,10 @@ export default function MetricsTable() {
     runStatus: state.runStatus,
     runError: state.runError,
     runNotice: state.runNotice
+  const { result, runStatus, runError } = useBacktestStore((state) => ({
+    result: state.result,
+    runStatus: state.runStatus,
+    runError: state.runError
   }));
 
   const metrics = result?.metrics;

@@ -9,6 +9,8 @@ import importlib.util
 import socket
 import threading
 import time
+import importlib
+import importlib.util
 from typing import TYPE_CHECKING
 
 import pytest
@@ -59,6 +61,10 @@ async def run_uvicorn_app(host: str = "127.0.0.1", port: int | None = None):
     finally:
         server.should_exit = True
         thread.join(timeout=5)
+_fastapi_testclient = importlib.import_module("fastapi.testclient")
+_backend_app = importlib.import_module("backend.app")
+TestClient = _fastapi_testclient.TestClient
+create_api_app = _backend_app.create_api_app
 
 
 def get_client() -> TestClient:
@@ -73,6 +79,9 @@ def test_health_endpoint() -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
     assert elapsed < 0.2
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
 
 
 def test_list_strategies() -> None:
@@ -80,6 +89,7 @@ def test_list_strategies() -> None:
     start = time.perf_counter()
     response = client.get("/api/strategies")
     elapsed = time.perf_counter() - start
+    response = client.get("/api/strategies")
     assert response.status_code == 200
     strategies = response.json()
     assert isinstance(strategies, list)
@@ -93,6 +103,7 @@ def test_run_backtest() -> None:
     start = time.perf_counter()
     response = client.post("/api/backtests/run", json=payload)
     elapsed = time.perf_counter() - start
+    response = client.post("/api/backtests/run", json=payload)
     assert response.status_code == 200
     data = response.json()
     assert data["strategy"] == "momentum-pulse-v5"
@@ -106,6 +117,7 @@ def test_list_decisions() -> None:
     start = time.perf_counter()
     response = client.get("/api/decisions")
     elapsed = time.perf_counter() - start
+    response = client.get("/api/decisions")
     assert response.status_code == 200
     decisions = response.json()
     assert isinstance(decisions, list)

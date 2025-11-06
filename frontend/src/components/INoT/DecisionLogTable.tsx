@@ -3,6 +3,7 @@ import ConfidenceGauge from './ConfidenceGauge';
 
 export default function DecisionLogTable() {
   const { recentDecisions, selectDecision, selectedDecision, status, error, notice } = useDecisionStore();
+  const { recentDecisions, selectDecision, selectedDecision, status, error } = useDecisionStore();
 
   return (
     <div className="space-y-4">

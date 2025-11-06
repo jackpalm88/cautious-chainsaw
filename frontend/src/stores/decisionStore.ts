@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api, DecisionRecordResponse, DataSource } from '../lib/api';
+import { api, DecisionRecordResponse } from '../lib/api';
 
 export interface AgentInsight {
   agent: string;
@@ -76,6 +77,19 @@ export const useDecisionStore = create<DecisionStore>((set, get) => ({
       });
     } catch (error) {
       set({ status: 'error', error: withMessage(error), notice: null, source: null });
+  hydrate: async () => {
+    if (get().status === 'loading' || get().status === 'success') return;
+    set({ status: 'loading', error: null });
+    try {
+      const decisions = await api.listDecisions();
+      const mapped = decisions.map(mapDecision);
+      set({
+        recentDecisions: mapped,
+        status: 'success',
+        selectedDecision: mapped[0] ?? null
+      });
+    } catch (error) {
+      set({ status: 'error', error: withMessage(error) });
     }
   },
   selectDecision: (id: string) => {
@@ -90,6 +104,7 @@ export const useDecisionStore = create<DecisionStore>((set, get) => ({
       status: 'success',
       source: 'live',
       notice: null
+      status: 'success'
     }));
   }
 }));

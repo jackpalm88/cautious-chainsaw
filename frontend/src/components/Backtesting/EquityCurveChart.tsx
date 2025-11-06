@@ -10,6 +10,10 @@ export default function EquityCurveChart() {
     runStatus: state.runStatus,
     runError: state.runError,
     runNotice: state.runNotice
+  const { result, runStatus, runError } = useBacktestStore((state) => ({
+    result: state.result,
+    runStatus: state.runStatus,
+    runError: state.runError
   }));
 
   const data = useMemo(() => {

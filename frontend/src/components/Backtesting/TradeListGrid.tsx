@@ -7,6 +7,10 @@ export default function TradeListGrid() {
     runStatus: state.runStatus,
     runError: state.runError,
     runNotice: state.runNotice
+  const { result, runStatus, runError } = useBacktestStore((state) => ({
+    result: state.result,
+    runStatus: state.runStatus,
+    runError: state.runError
   }));
   const [filter, setFilter] = useState<'all' | 'winners' | 'losers'>('all');
   const [direction, setDirection] = useState<'all' | 'LONG' | 'SHORT'>('all');

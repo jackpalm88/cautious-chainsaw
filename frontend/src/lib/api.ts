@@ -231,6 +231,24 @@ async function withFallback<T>(
     const message = error instanceof Error ? error.message : 'Unknown error';
     return { data: fallbackData, source: 'fallback', error: message };
   }
+const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? 'http://localhost:8000';
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const url = `${API_BASE}${path}`;
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers ?? {})
+    },
+    ...options
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `Request failed with status ${response.status}`);
+  }
+
+  return (await response.json()) as T;
 }
 
 export interface StrategySummary {
@@ -322,3 +340,13 @@ export const api = {
 export const socketUrl = (import.meta.env.VITE_SOCKET_URL as string | undefined) ?? API_BASE;
 
 export type { ApiResponse, DataSource };
+  listStrategies: () => request<StrategySummary[]>('/api/strategies'),
+  runBacktest: (payload: BacktestRunPayload) =>
+    request<BacktestRunResponse>('/api/backtests/run', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }),
+  listDecisions: () => request<DecisionRecordResponse[]>('/api/decisions')
+};
+
+export const socketUrl = (import.meta.env.VITE_SOCKET_URL as string | undefined) ?? API_BASE;
