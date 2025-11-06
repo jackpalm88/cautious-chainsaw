@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_started
+    ports:
+      - '8000:8000'
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    environment:
+      - VITE_API_BASE=http://backend:8000
+      - VITE_SOCKET_URL=http://backend:8000
+    depends_on:
+      - backend
+    ports:
+      - '5173:5173'
