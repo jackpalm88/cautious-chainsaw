@@ -115,6 +115,24 @@ def test_list_decisions() -> None:
     assert elapsed < 0.2
 
 
+def test_chat_requires_authenticated_session() -> None:
+    client = get_client()
+
+    unauthenticated = client.post("/api/chat", json={"message": "Hello"})
+    assert unauthenticated.status_code == 401
+
+    response = client.post(
+        "/api/chat",
+        json={"message": "Hello"},
+        headers={"Authorization": "Bearer user-123"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["userId"] == "user-123"
+    assert payload["message"] == "Hello"
+    assert "Received" in payload["reply"]
+
+
 @pytest.mark.asyncio
 async def test_fusion_stream_produces_updates() -> None:
     updates: list[dict] = []
