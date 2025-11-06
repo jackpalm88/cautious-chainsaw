@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api, DecisionRecordResponse, DataSource } from '../lib/api';
 
 export interface AgentInsight {
   agent: string;
@@ -17,59 +18,78 @@ export interface DecisionRecord {
   riskScore: number;
 }
 
+type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
+
 interface DecisionStore {
   recentDecisions: DecisionRecord[];
   selectedDecision: DecisionRecord | null;
+  status: AsyncStatus;
+  error: string | null;
+  source: DataSource | null;
+  notice: string | null;
+  hydrate: () => Promise<void>;
   selectDecision: (id: string) => void;
-  ingestDecision: (decision: DecisionRecord) => void;
+  ingestDecision: (decision: DecisionRecord | DecisionRecordResponse) => void;
 }
 
-const FAKE_DECISIONS: DecisionRecord[] = [
-  {
-    id: 'dec-001',
-    timestamp: Date.now() - 60_000,
-    action: 'BUY',
-    symbol: 'EURUSD',
-    confidence: 0.72,
-    summary: 'Momentum alignment across price and sentiment streams.',
-    rationale: 'Price action forms higher high with positive sentiment delta and no conflicting macro events.',
-    agentInsights: [
-      { agent: 'Market Intelligence', statement: 'News sentiment shifted +0.32 in the last 3 minutes.' },
-      { agent: 'Low-Level Reflection', statement: 'Latency within 75ms; price momentum intact.' },
-      { agent: 'High-Level Reflection', statement: 'No conflicting positions; risk-on regime persists.' },
-      { agent: 'Decision Agent', statement: 'Enter with 1.5% risk, stop below liquidity pocket at 1.0832.' }
-    ],
-    riskScore: 0.38
-  },
-  {
-    id: 'dec-002',
-    timestamp: Date.now() - 300_000,
-    action: 'HOLD',
-    symbol: 'GBPUSD',
-    confidence: 0.54,
-    summary: 'Conflicting macro sentiment – waiting for clarification.',
-    rationale: 'Economic surprise index in UK remains negative; prefer to observe upcoming GDP release.',
-    agentInsights: [
-      { agent: 'Market Intelligence', statement: 'Social sentiment is neutral, article velocity decreasing.' },
-      { agent: 'Low-Level Reflection', statement: 'Price volatility expanding, but no break in structure yet.' },
-      { agent: 'High-Level Reflection', statement: 'Macro regime uncertain; risk budget nearly exhausted.' },
-      { agent: 'Decision Agent', statement: 'Maintain current exposure; revisit after GDP print.' }
-    ],
-    riskScore: 0.61
-  }
-];
+const mapDecision = (decision: DecisionRecord | DecisionRecordResponse): DecisionRecord => ({
+  id: decision.id,
+  timestamp: decision.timestamp,
+  action: decision.action,
+  symbol: decision.symbol,
+  confidence: decision.confidence,
+  summary: decision.summary,
+  rationale: decision.rationale,
+  agentInsights: decision.agentInsights,
+  riskScore: decision.riskScore
+});
+
+const withMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  return 'Unable to load decisions';
+};
 
 export const useDecisionStore = create<DecisionStore>((set, get) => ({
-  recentDecisions: FAKE_DECISIONS,
+  recentDecisions: [],
   selectedDecision: null,
+  status: 'idle',
+  error: null,
+  source: null,
+  notice: null,
+  hydrate: async () => {
+    const { status, source } = get();
+    if (status === 'loading') return;
+    if (status === 'success' && source === 'live') return;
+    set({ status: 'loading', error: null, notice: null, source: null });
+    try {
+      const { data, source, error } = await api.listDecisions();
+      const mapped = data.map(mapDecision);
+      set({
+        recentDecisions: mapped,
+        status: 'success',
+        selectedDecision: mapped[0] ?? null,
+        source,
+        notice:
+          source === 'fallback'
+            ? error ?? 'Displaying cached decisions until live feed resumes.'
+            : null
+      });
+    } catch (error) {
+      set({ status: 'error', error: withMessage(error), notice: null, source: null });
+    }
+  },
   selectDecision: (id: string) => {
-    const decision = get().recentDecisions.find((d) => d.id === id) ?? null;
+    const decision = get().recentDecisions.find((item) => item.id === id) ?? null;
     set({ selectedDecision: decision });
   },
-  ingestDecision: (decision: DecisionRecord) => {
+  ingestDecision: (decision: DecisionRecord | DecisionRecordResponse) => {
+    const mapped = mapDecision(decision);
     set((state) => ({
-      recentDecisions: [decision, ...state.recentDecisions].slice(0, 20),
-      selectedDecision: decision
+      recentDecisions: [mapped, ...state.recentDecisions].slice(0, 50),
+      selectedDecision: mapped,
+      status: 'success',
+      source: 'live',
+      notice: null
     }));
   }
 }));

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
+import { socketUrl } from '../lib/api';
+import { useDecisionStore } from './decisionStore';
 
 export type SyncStatus = 'disconnected' | 'synced' | 'delayed' | 'stale';
 
@@ -58,21 +60,30 @@ export const useFusionStore = create<FusionStore>((set, get) => ({
       existing.disconnect();
     }
 
-    const socket = io('http://localhost:5000', {
+    const socket = io(socketUrl, {
       transports: ['websocket'],
       reconnectionAttempts: 5,
       reconnectionDelay: 1000
     });
 
     socket.on('connect', () => {
-      set({ connectionStatus: 'synced', symbol });
+      set({ connectionStatus: 'synced', symbol, latencyMs: null });
       socket.emit('subscribe_fusion', { symbol });
+    });
+
+    socket.on('connect_error', () => {
+      set({ connectionStatus: 'disconnected' });
+    });
+
+    socket.on('reconnect_attempt', () => {
+      set({ connectionStatus: 'delayed' });
     });
 
     socket.on('fusion_update', (payload: any) => {
       const now = Date.now();
-      const timestamp = (payload.timestamp ?? now) * 1000;
-      const latency = now - timestamp;
+      const timestampSeconds = payload.timestamp ?? now / 1000;
+      const timestamp = timestampSeconds * 1000;
+      const latency = payload.latencyMs ?? Math.max(0, now - timestamp);
 
       set((state) => ({
         latencyMs: latency,
@@ -91,8 +102,8 @@ export const useFusionStore = create<FusionStore>((set, get) => ({
           ...state.sentimentBuffer,
           {
             score: payload.sentiment.score,
-            articleCount: payload.sentiment.article_count ?? payload.sentiment.articleCount ?? 0,
-            latestHeadline: payload.sentiment.latest_headline ?? payload.sentiment.latestHeadline ?? '—',
+            articleCount: payload.sentiment.articleCount ?? payload.sentiment.article_count ?? 0,
+            latestHeadline: payload.sentiment.latestHeadline ?? payload.sentiment.latest_headline ?? '—',
             timestamp
           }
         ].slice(-MAX_SENTIMENT_POINTS),
@@ -119,6 +130,13 @@ export const useFusionStore = create<FusionStore>((set, get) => ({
             ? 'delayed'
             : 'stale'
       }));
+    });
+
+    socket.on('decision_update', (decision: any) => {
+      useDecisionStore.getState().ingestDecision({
+        ...decision,
+        timestamp: decision.timestamp ?? Date.now()
+      });
     });
 
     socket.on('disconnect', () => {

@@ -1,88 +1,95 @@
 import { create } from 'zustand';
+import { api, BacktestRunResponse, StrategySummary, DataSource } from '../lib/api';
 
-export interface BacktestMetrics {
-  netProfit: number;
-  maxDrawdown: number;
-  sharpeRatio: number;
-  winRate: number;
-  trades: number;
-}
+type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
 
-export interface TradeRecord {
-  id: string;
-  entryTime: number;
-  exitTime: number;
-  direction: 'LONG' | 'SHORT';
-  profit: number;
-  symbol: string;
-}
-
-export interface BacktestResult {
-  id: string;
-  equityCurve: { timestamp: number; equity: number }[];
-  drawdownCurve: { timestamp: number; drawdown: number }[];
-  metrics: BacktestMetrics;
-  trades: TradeRecord[];
-}
+export type BacktestResult = BacktestRunResponse;
 
 interface BacktestStore {
-  strategies: string[];
-  selectedStrategy: string;
+  strategies: StrategySummary[];
+  strategiesStatus: AsyncStatus;
+  strategiesError: string | null;
+  strategiesSource: DataSource | null;
+  strategiesNotice: string | null;
+  selectedStrategy: string | null;
   result: BacktestResult | null;
-  isLoading: boolean;
-  selectStrategy: (strategy: string) => void;
+  resultSource: DataSource | null;
+  runStatus: AsyncStatus;
+  runError: string | null;
+  runNotice: string | null;
+  loadStrategies: () => Promise<void>;
+  selectStrategy: (strategyId: string) => void;
   runBacktest: () => Promise<void>;
 }
 
-const mockEquity = () =>
-  Array.from({ length: 100 }, (_, idx) => ({
-    timestamp: Date.now() - (100 - idx) * 60_000,
-    equity: 100_000 + Math.sin(idx / 5) * 800 + idx * 120
-  }));
-
-const mockDrawdown = () =>
-  Array.from({ length: 100 }, (_, idx) => ({
-    timestamp: Date.now() - (100 - idx) * 60_000,
-    drawdown: Math.abs(Math.sin(idx / 8) * 4)
-  }));
-
-const mockTrades = (): TradeRecord[] =>
-  Array.from({ length: 25 }, (_, idx) => ({
-    id: `trade-${idx}`,
-    entryTime: Date.now() - (idx + 1) * 60 * 60 * 1000,
-    exitTime: Date.now() - idx * 60 * 60 * 1000,
-    direction: idx % 2 === 0 ? 'LONG' : 'SHORT',
-    profit: Number((Math.random() * 200 - 50).toFixed(2)),
-    symbol: 'EURUSD'
-  }));
+const withErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return 'Unexpected error occurred';
+};
 
 export const useBacktestStore = create<BacktestStore>((set, get) => ({
-  strategies: ['Momentum Pulse v5', 'Carry Radar v2', 'Mean Reversion v3'],
-  selectedStrategy: 'Momentum Pulse v5',
+  strategies: [],
+  strategiesStatus: 'idle',
+  strategiesError: null,
+  strategiesSource: null,
+  strategiesNotice: null,
+  selectedStrategy: null,
   result: null,
-  isLoading: false,
-  selectStrategy: (strategy: string) => set({ selectedStrategy: strategy }),
+  resultSource: null,
+  runStatus: 'idle',
+  runError: null,
+  runNotice: null,
+  loadStrategies: async () => {
+    if (get().strategiesStatus === 'loading') return;
+    set({ strategiesStatus: 'loading', strategiesError: null });
+    try {
+      const response = await api.listStrategies();
+      const { data: strategies, source, error } = response;
+      set({
+        strategies,
+        strategiesStatus: 'success',
+        strategiesSource: source,
+        strategiesNotice:
+          source === 'fallback'
+            ? error ?? 'Using offline strategies while API reconnects.'
+            : null,
+        selectedStrategy: get().selectedStrategy ?? strategies[0]?.id ?? null
+      });
+    } catch (error) {
+      set({
+        strategiesStatus: 'error',
+        strategiesError: withErrorMessage(error),
+        strategiesNotice: null,
+        strategiesSource: null
+      });
+    }
+  },
+  selectStrategy: (strategyId: string) => {
+    set({ selectedStrategy: strategyId });
+  },
   runBacktest: async () => {
-    if (get().isLoading) return;
-    set({ isLoading: true });
+    const { selectedStrategy, runStatus } = get();
+    if (!selectedStrategy || runStatus === 'loading') return;
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    set({
-      result: {
-        id: `${get().selectedStrategy}-${Date.now()}`,
-        equityCurve: mockEquity(),
-        drawdownCurve: mockDrawdown(),
-        metrics: {
-          netProfit: 12840,
-          maxDrawdown: -4.8,
-          sharpeRatio: 1.92,
-          winRate: 0.63,
-          trades: 245
-        },
-        trades: mockTrades()
-      },
-      isLoading: false
-    });
+    set({ runStatus: 'loading', runError: null, runNotice: null });
+    try {
+      const { data, source, error } = await api.runBacktest({
+        strategyId: selectedStrategy,
+        symbol: 'EURUSD'
+      });
+      set({
+        result: data,
+        resultSource: source,
+        runStatus: 'success',
+        runNotice:
+          source === 'fallback'
+            ? error ?? 'Showing simulated backtest while API is unreachable.'
+            : null
+      });
+    } catch (error) {
+      set({ runStatus: 'error', runError: withErrorMessage(error), runNotice: null });
+    }
   }
 }));

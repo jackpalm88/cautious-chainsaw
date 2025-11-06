@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react';
 import { useBacktestStore } from '../../stores/backtestStore';
 
 export default function TradeListGrid() {
-  const { result } = useBacktestStore();
+  const { result, runStatus, runError, runNotice } = useBacktestStore((state) => ({
+    result: state.result,
+    runStatus: state.runStatus,
+    runError: state.runError,
+    runNotice: state.runNotice
+  }));
   const [filter, setFilter] = useState<'all' | 'winners' | 'losers'>('all');
   const [direction, setDirection] = useState<'all' | 'LONG' | 'SHORT'>('all');
 
@@ -48,6 +53,11 @@ export default function TradeListGrid() {
       </header>
 
       <div className="overflow-hidden rounded-xl border border-slate-800/80">
+        {runStatus === 'success' && runNotice && (
+          <div className="border-b border-warning/40 bg-warning/10 px-4 py-2 text-xs text-warning">
+            {runNotice}
+          </div>
+        )}
         <table className="min-w-full divide-y divide-slate-800 text-sm">
           <thead className="bg-slate-900/80 text-slate-400">
             <tr>
@@ -58,7 +68,19 @@ export default function TradeListGrid() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/60 bg-slate-950/60 text-slate-300">
-            {trades.map((trade) => (
+            {runStatus === 'loading' && (
+              <tr>
+                <td colSpan={4} className="px-4 py-6 text-center text-slate-400">
+                  Running backtest…
+                </td>
+              </tr>
+            )}
+            {runStatus === 'error' && runError && (
+              <tr>
+                <td colSpan={4} className="px-4 py-6 text-center text-danger">{runError}</td>
+              </tr>
+            )}
+            {runStatus !== 'loading' && trades.map((trade) => (
               <tr key={trade.id} className="transition hover:bg-slate-900/70">
                 <td className="px-4 py-2">{new Date(trade.entryTime).toLocaleString()}</td>
                 <td className="px-4 py-2">{new Date(trade.exitTime).toLocaleString()}</td>
@@ -76,7 +98,7 @@ export default function TradeListGrid() {
                 </td>
               </tr>
             ))}
-            {trades.length === 0 && (
+            {runStatus === 'success' && trades.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
                   No trades match the selected filters yet.

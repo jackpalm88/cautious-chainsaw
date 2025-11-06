@@ -1,8 +1,31 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useBacktestStore } from '../stores/backtestStore';
 
 export const useBacktest = () => {
-  const { result, runBacktest, isLoading, selectedStrategy, selectStrategy, strategies } = useBacktestStore();
+  const {
+    result,
+    runBacktest,
+    runStatus,
+    runError,
+    runNotice,
+    resultSource,
+    selectedStrategy,
+    selectStrategy,
+    strategies,
+    strategiesStatus,
+    strategiesError,
+    strategiesNotice,
+    strategiesSource,
+    loadStrategies
+  } = useBacktestStore();
+
+  useEffect(() => {
+    if (strategiesStatus === 'idle') {
+      loadStrategies().catch((error) => {
+        console.error('Failed to load strategies', error);
+      });
+    }
+  }, [strategiesStatus, loadStrategies]);
 
   const triggerRun = useCallback(() => {
     runBacktest().catch((error) => {
@@ -12,10 +35,17 @@ export const useBacktest = () => {
 
   return {
     result,
-    isLoading,
+    runStatus,
+    runError,
+    runNotice,
+    resultSource,
     selectedStrategy,
     selectStrategy,
     strategies,
+    strategiesStatus,
+    strategiesError,
+    strategiesNotice,
+    strategiesSource,
     run: triggerRun
   };
 };
