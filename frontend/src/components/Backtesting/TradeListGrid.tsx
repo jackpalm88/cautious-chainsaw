@@ -2,6 +2,11 @@ import { useMemo, useState } from 'react';
 import { useBacktestStore } from '../../stores/backtestStore';
 
 export default function TradeListGrid() {
+  const { result, runStatus, runError, runNotice } = useBacktestStore((state) => ({
+    result: state.result,
+    runStatus: state.runStatus,
+    runError: state.runError,
+    runNotice: state.runNotice
   const { result, runStatus, runError } = useBacktestStore((state) => ({
     result: state.result,
     runStatus: state.runStatus,
@@ -52,6 +57,11 @@ export default function TradeListGrid() {
       </header>
 
       <div className="overflow-hidden rounded-xl border border-slate-800/80">
+        {runStatus === 'success' && runNotice && (
+          <div className="border-b border-warning/40 bg-warning/10 px-4 py-2 text-xs text-warning">
+            {runNotice}
+          </div>
+        )}
         <table className="min-w-full divide-y divide-slate-800 text-sm">
           <thead className="bg-slate-900/80 text-slate-400">
             <tr>

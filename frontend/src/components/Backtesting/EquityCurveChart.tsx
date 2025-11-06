@@ -5,6 +5,11 @@ import { useBacktestStore } from '../../stores/backtestStore';
 const formatTime = (timestamp: number) => new Date(timestamp).toLocaleTimeString();
 
 export default function EquityCurveChart() {
+  const { result, runStatus, runError, runNotice } = useBacktestStore((state) => ({
+    result: state.result,
+    runStatus: state.runStatus,
+    runError: state.runError,
+    runNotice: state.runNotice
   const { result, runStatus, runError } = useBacktestStore((state) => ({
     result: state.result,
     runStatus: state.runStatus,
@@ -46,6 +51,12 @@ export default function EquityCurveChart() {
         </div>
         <div className="text-xs text-slate-400">Sampled {data.length} points</div>
       </header>
+
+      {runNotice && runStatus === 'success' && (
+        <div className="mt-3 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning">
+          {runNotice}
+        </div>
+      )}
 
       {renderState()}
 

@@ -3,6 +3,11 @@ import { useBacktestStore } from '../../stores/backtestStore';
 const formatNumber = (value: number, suffix = '') => `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix}`;
 
 export default function MetricsTable() {
+  const { result, runStatus, runError, runNotice } = useBacktestStore((state) => ({
+    result: state.result,
+    runStatus: state.runStatus,
+    runError: state.runError,
+    runNotice: state.runNotice
   const { result, runStatus, runError } = useBacktestStore((state) => ({
     result: state.result,
     runStatus: state.runStatus,
@@ -17,6 +22,9 @@ export default function MetricsTable() {
       <p className="text-xs uppercase tracking-wide text-slate-500">Understand edge & risk in seconds</p>
 
       {runStatus === 'error' && runError && <p className="mt-3 text-xs text-danger">{runError}</p>}
+      {runStatus === 'success' && runNotice && (
+        <p className="mt-3 text-xs text-warning">{runNotice}</p>
+      )}
 
       <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
         <MetricCard

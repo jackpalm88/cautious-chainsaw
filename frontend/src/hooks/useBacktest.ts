@@ -7,11 +7,15 @@ export const useBacktest = () => {
     runBacktest,
     runStatus,
     runError,
+    runNotice,
+    resultSource,
     selectedStrategy,
     selectStrategy,
     strategies,
     strategiesStatus,
     strategiesError,
+    strategiesNotice,
+    strategiesSource,
     loadStrategies
   } = useBacktestStore();
 
@@ -33,11 +37,15 @@ export const useBacktest = () => {
     result,
     runStatus,
     runError,
+    runNotice,
+    resultSource,
     selectedStrategy,
     selectStrategy,
     strategies,
     strategiesStatus,
     strategiesError,
+    strategiesNotice,
+    strategiesSource,
     run: triggerRun
   };
 };

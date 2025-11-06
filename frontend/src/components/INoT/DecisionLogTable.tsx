@@ -2,6 +2,7 @@ import { useDecisionStore } from '../../stores/decisionStore';
 import ConfidenceGauge from './ConfidenceGauge';
 
 export default function DecisionLogTable() {
+  const { recentDecisions, selectDecision, selectedDecision, status, error, notice } = useDecisionStore();
   const { recentDecisions, selectDecision, selectedDecision, status, error } = useDecisionStore();
 
   return (
@@ -31,6 +32,9 @@ export default function DecisionLogTable() {
 
       {status === 'error' && error && (
         <div className="rounded-xl border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{error}</div>
+      )}
+      {status === 'success' && notice && (
+        <div className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm text-warning">{notice}</div>
       )}
 
       <div className="overflow-hidden rounded-xl border border-slate-800/80">

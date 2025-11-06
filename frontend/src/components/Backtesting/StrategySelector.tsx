@@ -6,6 +6,7 @@ export default function StrategySelector() {
     strategies,
     strategiesStatus,
     strategiesError,
+    strategiesNotice,
     selectedStrategy,
     selectStrategy,
     run,
@@ -59,6 +60,9 @@ export default function StrategySelector() {
       </div>
       {strategiesStatus === 'error' && strategiesError && (
         <p className="text-xs text-danger">{strategiesError}</p>
+      )}
+      {strategiesStatus === 'success' && strategiesNotice && (
+        <p className="text-xs text-warning">{strategiesNotice}</p>
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api, DecisionRecordResponse, DataSource } from '../lib/api';
 import { api, DecisionRecordResponse } from '../lib/api';
 
 export interface AgentInsight {
@@ -25,6 +26,8 @@ interface DecisionStore {
   selectedDecision: DecisionRecord | null;
   status: AsyncStatus;
   error: string | null;
+  source: DataSource | null;
+  notice: string | null;
   hydrate: () => Promise<void>;
   selectDecision: (id: string) => void;
   ingestDecision: (decision: DecisionRecord | DecisionRecordResponse) => void;
@@ -52,6 +55,28 @@ export const useDecisionStore = create<DecisionStore>((set, get) => ({
   selectedDecision: null,
   status: 'idle',
   error: null,
+  source: null,
+  notice: null,
+  hydrate: async () => {
+    const { status, source } = get();
+    if (status === 'loading') return;
+    if (status === 'success' && source === 'live') return;
+    set({ status: 'loading', error: null, notice: null, source: null });
+    try {
+      const { data, source, error } = await api.listDecisions();
+      const mapped = data.map(mapDecision);
+      set({
+        recentDecisions: mapped,
+        status: 'success',
+        selectedDecision: mapped[0] ?? null,
+        source,
+        notice:
+          source === 'fallback'
+            ? error ?? 'Displaying cached decisions until live feed resumes.'
+            : null
+      });
+    } catch (error) {
+      set({ status: 'error', error: withMessage(error), notice: null, source: null });
   hydrate: async () => {
     if (get().status === 'loading' || get().status === 'success') return;
     set({ status: 'loading', error: null });
@@ -76,6 +101,9 @@ export const useDecisionStore = create<DecisionStore>((set, get) => ({
     set((state) => ({
       recentDecisions: [mapped, ...state.recentDecisions].slice(0, 50),
       selectedDecision: mapped,
+      status: 'success',
+      source: 'live',
+      notice: null
       status: 'success'
     }));
   }

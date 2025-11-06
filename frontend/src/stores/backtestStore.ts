@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api, BacktestRunResponse, StrategySummary, DataSource } from '../lib/api';
 import { api, BacktestRunResponse, StrategySummary } from '../lib/api';
 
 type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -9,6 +10,14 @@ interface BacktestStore {
   strategies: StrategySummary[];
   strategiesStatus: AsyncStatus;
   strategiesError: string | null;
+  strategiesSource: DataSource | null;
+  strategiesNotice: string | null;
+  selectedStrategy: string | null;
+  result: BacktestResult | null;
+  resultSource: DataSource | null;
+  runStatus: AsyncStatus;
+  runError: string | null;
+  runNotice: string | null;
   selectedStrategy: string | null;
   result: BacktestResult | null;
   runStatus: AsyncStatus;
@@ -29,6 +38,14 @@ export const useBacktestStore = create<BacktestStore>((set, get) => ({
   strategies: [],
   strategiesStatus: 'idle',
   strategiesError: null,
+  strategiesSource: null,
+  strategiesNotice: null,
+  selectedStrategy: null,
+  result: null,
+  resultSource: null,
+  runStatus: 'idle',
+  runError: null,
+  runNotice: null,
   selectedStrategy: null,
   result: null,
   runStatus: 'idle',
@@ -37,6 +54,25 @@ export const useBacktestStore = create<BacktestStore>((set, get) => ({
     if (get().strategiesStatus === 'loading') return;
     set({ strategiesStatus: 'loading', strategiesError: null });
     try {
+      const response = await api.listStrategies();
+      const { data: strategies, source, error } = response;
+      set({
+        strategies,
+        strategiesStatus: 'success',
+        strategiesSource: source,
+        strategiesNotice:
+          source === 'fallback'
+            ? error ?? 'Using offline strategies while API reconnects.'
+            : null,
+        selectedStrategy: get().selectedStrategy ?? strategies[0]?.id ?? null
+      });
+    } catch (error) {
+      set({
+        strategiesStatus: 'error',
+        strategiesError: withErrorMessage(error),
+        strategiesNotice: null,
+        strategiesSource: null
+      });
       const strategies = await api.listStrategies();
       set({
         strategies,
@@ -54,6 +90,23 @@ export const useBacktestStore = create<BacktestStore>((set, get) => ({
     const { selectedStrategy, runStatus } = get();
     if (!selectedStrategy || runStatus === 'loading') return;
 
+    set({ runStatus: 'loading', runError: null, runNotice: null });
+    try {
+      const { data, source, error } = await api.runBacktest({
+        strategyId: selectedStrategy,
+        symbol: 'EURUSD'
+      });
+      set({
+        result: data,
+        resultSource: source,
+        runStatus: 'success',
+        runNotice:
+          source === 'fallback'
+            ? error ?? 'Showing simulated backtest while API is unreachable.'
+            : null
+      });
+    } catch (error) {
+      set({ runStatus: 'error', runError: withErrorMessage(error), runNotice: null });
     set({ runStatus: 'loading', runError: null });
     try {
       const response = await api.runBacktest({ strategyId: selectedStrategy, symbol: 'EURUSD' });
