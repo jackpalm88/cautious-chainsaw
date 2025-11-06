@@ -1,19 +1,21 @@
-"""Vercel Serverless Function entrypoint exposing the FastAPI app under /api."""
+from __future__ import annotations
 
-import os
 import sys
-from typing import Any
+from pathlib import Path
 
-# Ensure the src/ directory is importable so ``backend`` resolves on Vercel.
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+# Pievienojam repo/src Python ceļu (absolūti, priekšplānā), lai importi strādātu serverless vidē.
+src_path = Path(__file__).resolve().parents[1] / "src"
+sys.path.insert(0, str(src_path))
 
-from backend.app import create_api_app
+from fastapi import FastAPI  # noqa: E402
 
-app = create_api_app()
+from backend.app import create_api_app  # noqa: E402
+
+# Izmantojam tikai HTTP FastAPI app (bez Socket.IO) — Vercel Serverless Functions nebalsta klasiskos websockets.
+app: FastAPI = create_api_app()
 
 
+# Ātrs ping zem /api
 @app.get("/")
-def root() -> dict[str, Any]:
-    """Provide a simple ping so /api responds with a JSON payload."""
-
-    return {"ok": True, "message": "FastAPI on Vercel is live.", "health": "/api/health"}
+def root() -> dict[str, object]:
+    return {"ok": True, "service": "cautious-chainsaw", "path": "/api"}
