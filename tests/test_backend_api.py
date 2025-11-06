@@ -1,11 +1,23 @@
 """Smoke tests for the FastAPI surface area."""
 
+from __future__ import annotations
+
+import importlib
+import importlib.util
+from typing import TYPE_CHECKING
+
 import pytest
 
-fastapi = pytest.importorskip('fastapi')
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient
 
-from backend.app import create_api_app
-from fastapi.testclient import TestClient
+if importlib.util.find_spec("fastapi") is None:  # pragma: no cover - optional dependency
+    pytest.skip("fastapi not installed", allow_module_level=True)
+
+_fastapi_testclient = importlib.import_module("fastapi.testclient")
+_backend_app = importlib.import_module("backend.app")
+TestClient = _fastapi_testclient.TestClient
+create_api_app = _backend_app.create_api_app
 
 
 def get_client() -> TestClient:

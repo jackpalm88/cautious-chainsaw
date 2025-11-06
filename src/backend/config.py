@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing import List
 
 from pydantic import BaseModel, Field
 
@@ -8,7 +7,7 @@ class Settings(BaseModel):
     """Application configuration loaded from environment variables."""
 
     api_prefix: str = Field(default="/api")
-    allowed_origins: List[str] = Field(
+    allowed_origins: list[str] = Field(
         default_factory=lambda: ["http://localhost:5173", "http://127.0.0.1:5173", "*"]
     )
     socket_ping_interval: float = 20.0

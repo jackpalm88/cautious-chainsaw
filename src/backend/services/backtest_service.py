@@ -4,15 +4,14 @@ from __future__ import annotations
 
 import random
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Dict, List
+from datetime import UTC, datetime, timedelta
 
 
 class BacktestService:
     """Generate synthetic yet consistent backtest reports."""
 
     def __init__(self) -> None:
-        self._cache: Dict[str, dict] = {}
+        self._cache: dict[str, dict] = {}
 
     def list_strategies(self) -> list[dict]:
         """Return available strategy templates."""
@@ -47,15 +46,15 @@ class BacktestService:
 
         rng = random.Random(cache_key)
         base_equity = 100_000.0
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
 
-        equity_curve: List[dict] = []
-        drawdown_curve: List[dict] = []
-        trades: List[dict] = []
+        equity_curve: list[dict] = []
+        drawdown_curve: list[dict] = []
+        trades: list[dict] = []
         equity = base_equity
         peak_equity = base_equity
 
-        for index in range(bars):
+        for _ in range(bars):
             timestamp -= timedelta(minutes=5)
             drift = rng.normalvariate(120.0, 260.0)
             equity = max(base_equity * 0.4, equity + drift)
@@ -93,7 +92,7 @@ class BacktestService:
             "id": str(uuid.uuid4()),
             "strategy": strategy_id,
             "symbol": symbol,
-            "generatedAt": datetime.now(timezone.utc).isoformat(),
+            "generatedAt": datetime.now(UTC).isoformat(),
             "metrics": {
                 "netProfit": round(net_profit, 2),
                 "maxDrawdown": round(max_drawdown, 2),

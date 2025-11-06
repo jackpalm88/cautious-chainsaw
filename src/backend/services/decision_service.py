@@ -5,9 +5,9 @@ from __future__ import annotations
 import random
 import uuid
 from collections import deque
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Deque, Iterable, List
+from datetime import UTC, datetime
 
 
 @dataclass(slots=True)
@@ -30,7 +30,7 @@ class DecisionRecord:
     summary: str
     rationale: str
     risk_score: float
-    agent_insights: List[AgentInsight] = field(default_factory=list)
+    agent_insights: list[AgentInsight] = field(default_factory=list)
 
     def to_payload(self) -> dict:
         """Serialize record to JSON-friendly structure."""
@@ -55,7 +55,7 @@ class DecisionService:
     """Stateful service that fabricates realistic looking decisions."""
 
     def __init__(self, *, history_limit: int = 20) -> None:
-        self._history: Deque[DecisionRecord] = deque(maxlen=history_limit)
+        self._history: deque[DecisionRecord] = deque(maxlen=history_limit)
         self._rng = random.Random("decision-feed")
         self._seed_initial_decisions()
 
@@ -74,7 +74,7 @@ class DecisionService:
     def create_decision(self, *, symbol: str) -> dict:
         """Create a new decision and append it to the history."""
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         action = self._rng.choices(["BUY", "SELL", "HOLD"], weights=[0.4, 0.35, 0.25])[0]
         confidence = max(0.35, min(0.92, self._rng.normalvariate(0.65, 0.12)))
         risk_score = max(0.1, min(0.95, 1 - confidence + self._rng.random() * 0.2))

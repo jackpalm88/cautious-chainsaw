@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from datetime import datetime, timezone
-from typing import Dict, Optional
+from datetime import UTC, datetime
 
 import socketio
 
@@ -19,7 +18,7 @@ class FusionSocketService:
     def __init__(self, sio: socketio.AsyncServer, decisions: DecisionService) -> None:
         self._sio = sio
         self._decisions = decisions
-        self._tasks: Dict[str, asyncio.Task] = {}
+        self._tasks: dict[str, asyncio.Task] = {}
         self._settings = get_settings()
 
     # ------------------------------------------------------------------ Socket
@@ -46,7 +45,7 @@ class FusionSocketService:
         self._tasks[sid] = task
 
     async def _stop_stream(self, sid: str) -> None:
-        task: Optional[asyncio.Task] = self._tasks.pop(sid, None)
+        task: asyncio.Task | None = self._tasks.pop(sid, None)
         if task and not task.done():
             task.cancel()
             try:
@@ -63,7 +62,7 @@ class FusionSocketService:
 
         try:
             while True:
-                timestamp = datetime.now(timezone.utc).timestamp()
+                timestamp = datetime.now(UTC).timestamp()
                 price_change = rng.normalvariate(0, 0.0005)
                 price = max(0.2, price + price_change)
                 high = price + abs(rng.normalvariate(0, 0.0007))

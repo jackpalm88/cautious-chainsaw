@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import socketio
 
 from backend.config import get_settings
 from backend.routes import backtests, decisions, health, strategies
