@@ -31,6 +31,20 @@ def test_health_endpoint() -> None:
     assert response.json()["status"] == "ok"
 
 
+def test_root_redirects_to_docs() -> None:
+    client = get_client()
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code in {301, 302, 303, 307, 308}
+    assert response.headers["location"].endswith("/docs")
+
+
+def test_favicon_returns_no_content() -> None:
+    client = get_client()
+    response = client.get("/favicon.ico")
+    assert response.status_code == 204
+    assert response.content == b""
+
+
 def test_list_strategies() -> None:
     client = get_client()
     response = client.get("/api/strategies")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import socketio
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import get_settings
@@ -34,14 +35,16 @@ def create_api_app() -> FastAPI:
     app.include_router(decisions.router, prefix=api_prefix)
 
     @app.get("/", include_in_schema=False)
-    def root() -> dict[str, str]:
-        """Provide a helpful landing message for the deployment root."""
+    def root() -> RedirectResponse:
+        """Redirect the root path to the interactive documentation."""
 
-        return {
-            "message": "Cautious Chainsaw API is running.",
-            "health": "/health",
-            "api": api_prefix or "/",
-        }
+        return RedirectResponse(url="/docs")
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon() -> Response:
+        """Return an empty favicon response to silence 404 noise in logs."""
+
+        return Response(status_code=204)
 
     if api_prefix and api_prefix != "/":
 
