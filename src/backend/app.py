@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import socketio
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import get_settings
@@ -26,9 +27,37 @@ def create_api_app() -> FastAPI:
 
     api_prefix = settings.api_prefix
     app.include_router(health.router, prefix="")
+    if api_prefix and api_prefix != "/":
+        app.include_router(health.router, prefix=api_prefix)
+
     app.include_router(strategies.router, prefix=api_prefix)
     app.include_router(backtests.router, prefix=api_prefix)
     app.include_router(decisions.router, prefix=api_prefix)
+
+    @app.get("/", include_in_schema=False)
+    def root() -> RedirectResponse:
+        """Redirect the root path to the interactive documentation."""
+
+        return RedirectResponse(url="/docs")
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon() -> Response:
+        """Return an empty favicon response to silence 404 noise in logs."""
+
+        return Response(status_code=204)
+
+    if api_prefix and api_prefix != "/":
+
+        @app.get(api_prefix, include_in_schema=False)
+        @app.get(f"{api_prefix}/", include_in_schema=False)
+        def api_landing() -> dict[str, str]:
+            """Offer guidance for the API namespace entrypoint."""
+
+            return {
+                "message": "Cautious Chainsaw API namespace.",
+                "health": f"{api_prefix}/health",
+            }
+
     return app
 
 

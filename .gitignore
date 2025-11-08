@@ -57,3 +57,7 @@ config/secrets.yml
 *.ex5
 *.mq5
 MQL5/
+
+# Node
+node_modules/
+frontend/node_modules/
