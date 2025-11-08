@@ -1,0 +1,60 @@
+# Python caches and build artifacts
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.dylib
+*.egg-info/
+dist/
+build/
+.eggs/
+wheels/
+sdist/
+.tox/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.env
+.venv/
+venv/
+env/
+
+# Tests and fixtures
+tests/
+__tests__/
+fixtures/
+__fixtures__/
+
+# Documentation and examples
+docs/
+examples/
+IMPLEMENTATION_SUMMARY.md
+E2E_PIPELINE_DOCUMENTATION.md
+QUICKSTART.md
+SPRINT_SUMMARY*
+
+# Frontend and node artifacts
+frontend/
+node_modules/
+.next/
+.cache/
+public/
+
+# Container and ops tooling
+Dockerfile
+Dockerfile.*
+docker/
+docker-compose.yml
+
+# Miscellaneous repository files not needed at runtime
+*.md
+*.rst
+LICENSE
+.git/
+.github/
+.gitignore
+.vercel/

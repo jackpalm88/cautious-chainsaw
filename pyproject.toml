@@ -7,7 +7,7 @@ name = "trading-agent"
 version = "1.0.0"
 description = "INoT-inspired Trading Agent with Tool Stack, Multi-Broker Support, and LLM Orchestration"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
     {name = "Your Name", email = "your.email@example.com"}
@@ -17,56 +17,44 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
 
 dependencies = [
-    # Core
-    "numpy>=1.24.0",
-    "pandas>=2.0.0",
-
-    # Technical Analysis
-    "ta-lib>=0.4.28",  # Note: requires binary installation
-
-    # Broker APIs
-    "python-binance>=1.0.19",
-    "ib-insync>=0.9.86",  # Interactive Brokers
-
-    # HTTP/Async
-    "requests>=2.31.0",
-    "aiohttp>=3.9.0",
-    "fastapi>=0.110.0",
-    "uvicorn[standard]>=0.24.0",
-    "python-socketio>=5.11.0",
-    "redis>=5.0.0",
-
-    # Data validation
-    "pydantic>=2.5.0",
-    "jsonschema>=4.20.0",
-
-    # Machine Learning
-    "scikit-learn>=1.3.0",
-
-    # Configuration
-    "pyyaml>=6.0.1",
-
-    # Utilities
-    "python-dateutil>=2.8.2",
-    "pytz>=2023.3",
-
-    # LLM Integration
-    "anthropic>=0.8.0",
+    # Minimal runtime footprint for the serverless API deployment
+    "fastapi>=0.117.1,<0.118.0",
+    "pydantic>=2.8.0,<3.0.0",
+    "python-socketio>=5.11.0,<6.0.0",
+    "jsonschema>=4.20.0,<5.0.0",
+    "requests>=2.31.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
 windows = [
     "MetaTrader5>=5.0.45",
 ]
+analytics = [
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scikit-learn>=1.3.0",
+]
+brokers = [
+    "python-binance>=1.0.19",
+    "ib-insync>=0.9.86",
+]
+streaming = [
+    "aiohttp>=3.9.0",
+    "redis>=5.0.0",
+]
 technical-analysis = [
-    # pandas-ta has no Python 3.11+ wheels on PyPI as of 2024-11
-    # Users who rely on pandas-ta can install a compatible build manually.
-    "pandas-ta>=0.3.14b0; python_version < '3.11'",
+    "ta-lib>=0.4.28",
+    # pandas-ta lacks official Python 3.12 wheels on PyPI as of 2024-11.
+    # Install manually if you pin to an older interpreter that supports it.
+]
+config = [
+    "pyyaml>=6.0.1",
+    "python-dateutil>=2.8.2",
+    "pytz>=2023.3",
 ]
 dev = [
     # Testing
@@ -88,8 +76,25 @@ dev = [
 
 llm = [
     # LLM Integration (optional - user provides API keys)
-    # anthropic moved to core dependencies for INoT integration
+    "anthropic>=0.8.0",
     "openai>=1.3.0",
+]
+full = [
+    # Convenience extra for the original rich trading toolkit footprint
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scikit-learn>=1.3.0",
+    "ta-lib>=0.4.28",
+    "python-binance>=1.0.19",
+    "ib-insync>=0.9.86",
+    "aiohttp>=3.9.0",
+    "redis>=5.0.0",
+    "pyyaml>=6.0.1",
+    "python-dateutil>=2.8.2",
+    "pytz>=2023.3",
+    "jsonschema>=4.20.0",
+    "requests>=2.31.0",
+    "uvicorn[standard]>=0.24.0",
 ]
 
 docs = [
@@ -145,7 +150,7 @@ exclude_lines = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 unsafe-fixes = true
 
 [tool.ruff.lint]
@@ -169,7 +174,7 @@ quote-style = "preserve"
 "tests/*" = ["B", "F841"]  # Relax rules for tests
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -195,7 +200,7 @@ ignore_missing_imports = true
 
 [tool.black]
 line-length = 100
-target-version = ["py311"]
+target-version = ["py312"]
 include = '\.pyi?$'
 extend-exclude = '''
 /(
