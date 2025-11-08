@@ -26,9 +26,35 @@ def create_api_app() -> FastAPI:
 
     api_prefix = settings.api_prefix
     app.include_router(health.router, prefix="")
+    if api_prefix and api_prefix != "/":
+        app.include_router(health.router, prefix=api_prefix)
+
     app.include_router(strategies.router, prefix=api_prefix)
     app.include_router(backtests.router, prefix=api_prefix)
     app.include_router(decisions.router, prefix=api_prefix)
+
+    @app.get("/", include_in_schema=False)
+    def root() -> dict[str, str]:
+        """Provide a helpful landing message for the deployment root."""
+
+        return {
+            "message": "Cautious Chainsaw API is running.",
+            "health": "/health",
+            "api": api_prefix or "/",
+        }
+
+    if api_prefix and api_prefix != "/":
+
+        @app.get(api_prefix, include_in_schema=False)
+        @app.get(f"{api_prefix}/", include_in_schema=False)
+        def api_landing() -> dict[str, str]:
+            """Offer guidance for the API namespace entrypoint."""
+
+            return {
+                "message": "Cautious Chainsaw API namespace.",
+                "health": f"{api_prefix}/health",
+            }
+
     return app
 
 
